@@ -1,0 +1,10 @@
+__pycache__
+*.html
+*.ipynb
+*.log
+*.pt
+*.npy
+*.csv
+*.pkl
+*.zip
+*.npz
