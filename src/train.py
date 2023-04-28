@@ -202,6 +202,9 @@ def train(args:EasyDict, train_loader, test_loader, logger):
         }
         logger.info('=== Epoch {}, train loss {:.4f}, test auc {:.4f}, test acc {:.4f} ==='.format(*eval_info.values()))
         
+        if test_auc <=0.51:
+            return best_auc, best_acc, best_lr
+
         wandb.log({
             "Test Accuracy": test_acc,
             "Test AUC": test_auc,
