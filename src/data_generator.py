@@ -184,14 +184,15 @@ class KT_Sequence_Graph(Dataset):
                 self.user_seq_dict[f"{user_id}"] = (exe_id, part, ans_c, ts, interaction_c)
         
         self.item_seq_dict = {}
+        print(len(self.user_ids))
         for user_seq_id in self.user_ids:
             user_seq = self.user_seq_dict[user_seq_id]
-            target_cid = user_seq[0]
-            target_cid = target_cid[-1]
+            cids = user_seq[0]
+            target_cid = cids[-1]
             u_id, ans_c, ts, part = item_groups[target_cid]
-            n = self.seq_len #*2
+            n = self.seq_len
             if n > len(u_id):
-                n =len(u_id)
+                n = len(u_id)
             indices = np.random.choice(len(u_id), n, replace=False)
             self.item_seq_dict[user_seq_id] = u_id[indices]
 

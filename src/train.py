@@ -18,6 +18,7 @@ from sklearn.metrics import roc_auc_score, accuracy_score, f1_score
 
 from utils import get_logger, get_args_from_yaml
 from data_generator_ednet import get_dataloader_ednet, get_dataloader_ednet_part
+from data_generator_junyi import get_dataloader_junyi
 from data_generator_assist import get_dataloader_assist, get_dataloader_assist_part
 import config
 
@@ -106,7 +107,7 @@ def train_epoch(model, optimizer, loader, device, logger, log_interval, gamma):
     return epoch_loss / len(loader.dataset)
 
 
-NUM_WORKER = 16
+NUM_WORKER = 8
 
 def train(args:EasyDict, train_loader, test_loader, logger):
     th.manual_seed(0)
@@ -235,6 +236,7 @@ DATALOADER_MAP = {
     'ednet':get_dataloader_ednet,
     'ednet_part':get_dataloader_ednet_part,
     'ednet_part2':get_dataloader_ednet_part,
+    'junyi':get_dataloader_junyi,
 }
 
 
