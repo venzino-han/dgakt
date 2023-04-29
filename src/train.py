@@ -9,6 +9,8 @@ import torch as th
 import torch.nn as nn
 from torch import optim
 
+from tqdm import tqdm
+
 import time
 from easydict import EasyDict
 from prettytable import PrettyTable
@@ -50,7 +52,7 @@ def evaluate(model, loader, device, gamma):
     model.eval()
     val_labels = []
     val_preds = []
-    for batch in loader:
+    for batch in tqdm(loader):
         with th.no_grad():
             subg_preds, ui_preds = model(batch[0].to(device))
             preds = subg_preds*gamma+ui_preds*(1-gamma)
@@ -106,8 +108,6 @@ def train_epoch(model, optimizer, loader, device, logger, log_interval, gamma):
             
     return epoch_loss / len(loader.dataset)
 
-
-NUM_WORKER = 8
 
 def train(args:EasyDict, train_loader, test_loader, logger):
     th.manual_seed(0)
@@ -267,7 +267,7 @@ def main():
         train_loader, test_loader = dataloader_manager( 
                                                        data_path=sub_args.dataset,
                                                        batch_size=sub_args.batch_size, 
-                                                       num_workers=NUM_WORKER,
+                                                       num_workers=config.NUM_WORKER,
                                                        seq_len=sub_args.max_seq,
                                                        center_node=center_node
                                                         )

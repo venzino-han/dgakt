@@ -65,6 +65,7 @@ def get_subgraph_label(graph:dgl.graph,
                     part_neighbors, tag_neighbors
                     ], dim=0,) 
     nodes = nodes.type(th.int32)
+    nodes = th.clamp(nodes, min=0, max=graph.number_of_nodes()-1)
     subgraph = dgl.node_subgraph(graph, nodes, store_ids=True) 
     node_labels = [0,1] + [2]*len(u_neighbors) + [3]*len(i_neighbors) \
                     + [4]*len(part_neighbors) + [5]*len(tag_neighbors) 
@@ -149,9 +150,8 @@ class KT_Sequence_Graph(Dataset):
         interaction_count = []
 
         # get user seqs
-        for user_id in user_groups.index:
+        for user_id in tqdm(user_groups.index):
             self.user_id_set.add(user_id)
-            # "user_id", "content_id", "answered_correctly", "timestamp", 'part'
             exe_id, ans_c, ts, part = user_groups[user_id]
             interaction_c = np.array(list(range(0,len(exe_id))))
 
@@ -182,19 +182,41 @@ class KT_Sequence_Graph(Dataset):
             else:
                 self.user_ids.append(f"{user_id}")
                 self.user_seq_dict[f"{user_id}"] = (exe_id, part, ans_c, ts, interaction_c)
+
         
+        print('start item grouping')
         self.item_seq_dict = {}
-        print(len(self.user_ids))
-        for user_seq_id in self.user_ids:
+        
+        # def _process_user_seq(user_seq_id):
+        #     user_seq = user_seq_dict[user_seq_id]
+        #     cids = user_seq[0]
+        #     target_cid = cids[-1]
+        #     uids = item_groups[target_cid][0]
+        #     n = min(self.seq_len, len(uids))
+        #     indices = np.random.choice(len(uids), n, replace=False)
+        #     return user_seq_id, uids[indices]
+        
+        # print(datetime.datetime.now())
+
+        # self._process_user_seq_partial = partial(_process_user_seq, self)
+        # with Pool(8) as pool:
+        #     results = pool.map(self._process_user_seq_partial, self.user_ids)
+
+        # print(datetime.datetime.now())
+        # for user_seq_id, uid_seq in results:
+        #     self.item_seq_dict[user_seq_id] = uid_seq
+        # print(datetime.datetime.now())
+
+        # print(len(self.user_ids))
+        for user_seq_id in tqdm(self.user_ids):
             user_seq = self.user_seq_dict[user_seq_id]
             cids = user_seq[0]
             target_cid = cids[-1]
-            u_id, ans_c, ts, part = item_groups[target_cid]
-            n = self.seq_len
-            if n > len(u_id):
-                n = len(u_id)
-            indices = np.random.choice(len(u_id), n, replace=False)
-            self.item_seq_dict[user_seq_id] = u_id[indices]
+            uids = item_groups[target_cid][0]
+            # print(type(uids),uids)
+            n = min(self.seq_len, len(uids))
+            # indices = np.random.choice(len(uids), n, replace=False)
+            self.item_seq_dict[user_seq_id] = uids[-n:]
 
         # build user-exe graph
         uids = interaction_df['user_id']
@@ -206,32 +228,9 @@ class KT_Sequence_Graph(Dataset):
 
         self.graph = self._build_user_exe_graph(uids, eids, correctness, ts, interaction_counts)
 
-        # # exe-KC dict
-        # num_part = max(problem_df['part']) + 1
-        # tags = []
-        # for tag_string in problem_df['tags']:
-        #     tags = tag_string.split()
-        #     for tag in tags:
-        #         tags.append(tags.)
-        # num_tag = max(tags) + 1
-        
-        # self.item_part_dict = {}
-        # for eid, part in zip(problem_df['question_id'], problem_df['part']):
-        #     self.item_part_dict[eid] = part + self.num_nodes
-
-        # self.item_tag_dict = {}
-        # for eid, tag in zip(problem_df['question_id'], problem_df['tags']):
-        #     self.item_tag_dict[eid] = tag + num_part + self.num_nodes
-
-        # parts = []
-        # tags = []
-        # for eid in eids:
-        #     parts.append(self.item_part_dict[eid])
-        #     tags.append(self.item_tag_dict[eid])
-
-
         # exe-KC dict
-        num_part = max(problem_df['part']) + 1
+        num_part = len(set(problem_df['part']))+1
+        print('num_part : ', num_part)
         
         self.item_part_dict = {}
         for eid, part in zip(problem_df['question_id'], problem_df['part']):
@@ -245,14 +244,14 @@ class KT_Sequence_Graph(Dataset):
         tags = problem_df['tags']
         eid_list = []
         tag_list = []
-        for pid, tag_set in zip(eids,tags):
+        for eid, tag_set in zip(eids,tags):
             try:
                 tag_set = tag_set.split()
             except:
                 continue
             tag_set = map(int, tag_set)
             for tag in tag_set:
-                eid_list.append(pid)
+                eid_list.append(eid)
                 tag_list.append(tag + num_part + self.num_nodes)
         num_tag = len(set(tag_list))
         
@@ -365,19 +364,12 @@ class KT_Sequence_Graph(Dataset):
                                       center_node=self.center_node,
                                     )
 
-        # part_neighbors = list(set(part_neighbors))
-        # tag_neighbors = list(set(tag_neighbors))
+        n = subgraph.number_of_edges()
+        if n > 4000:
+            prob = (n-4000)/n
+            transform = dgl.DropEdge(prob)
+            subgraph = transform(subgraph)
 
-        # subgraph = get_subgraph_label(graph = self.graph,
-        #                               u_node_idx=th.tensor([u_idx]),
-        #                               i_node_idx=th.tensor([i_idx]),
-        #                               u_neighbors=th.tensor(u_neighbors),
-        #                               i_neighbors=th.tensor(i_neighbors),
-        #                               part_neighbors=th.tensor(part_neighbors),
-        #                               tag_neighbors=th.tensor(tag_neighbors),
-        #                               center_node=self.center_node,
-        #                             )
-        
 
         return subgraph, th.tensor(label, dtype=th.float32)
     
