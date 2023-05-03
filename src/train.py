@@ -138,14 +138,13 @@ class Evaluator():
 
 
 class Traniner():
-    def __init__(self, model, args, train_loader, optimizer, logger) -> None:
+    def __init__(self, model, args, train_loader, optimizer) -> None:
         self.model = model
         self.args = args
         self.train_loader = train_loader
         self.mse_loss_fn = nn.MSELoss().to(args.device)
         self.bce_loss_fn = nn.BCELoss().to(args.device)
         self.optimizer = optimizer
-        self.logger = logger
         self.log_interval = args.log_interval
         self.gamma = args.gamma
         self.lambda_ = args.lambda_
@@ -172,7 +171,7 @@ class Traniner():
         loss = self.bce_loss_fn(preds,labels)
         return preds, loss
 
-    def train_epoch(self):
+    def train_epoch(self, logger):
         self.model.train()
 
         epoch_loss = 0.
@@ -195,7 +194,7 @@ class Traniner():
             iter_dur.append(time.time() - t_start)
 
             if iter_idx % self.log_interval == 0:
-                self.logger.debug(f"Iter={iter_idx}, loss={iter_loss/iter_cnt:.4f}, rmse={math.sqrt(iter_mse/iter_cnt):.4f}, time={np.average(iter_dur):.4f}")
+                logger.debug(f"Iter={iter_idx}, loss={iter_loss/iter_cnt:.4f}, rmse={math.sqrt(iter_mse/iter_cnt):.4f}, time={np.average(iter_dur):.4f}")
                 iter_loss, iter_mse, iter_cnt = 0., 0., 0
 
         return self.model, epoch_loss/len(self.train_loader.dataset)
@@ -248,7 +247,7 @@ def main():
                                                        seq_len=sub_args.max_seq,
                                                        center_node=center_node
                                                         )
-
+        best_lr = None
         for lr in args.train_lrs:
             date_time = datetime.now().strftime("%Y%m%d_%H:%M")
             sub_args['train_lr'] = lr
@@ -265,24 +264,22 @@ def main():
             count_parameters(model)
             wandb.watch(model)
             optimizer = optim.Adam(model.parameters(), lr=args.train_lr, weight_decay=args.weight_decay)
-            trainer = Traniner(model, args, train_loader, optimizer, logger)
+            trainer = Traniner(model, args, train_loader, optimizer)
             evaluator = Evaluator(args.model_type, args.device, gamma=args.gamma)
 
             best_epoch = 0
             best_auc, best_acc = 0, 0
-            best_lr = None
 
             logger.info(f"Start training ... learning rate : {args.train_lr}")
             epochs = list(range(1, args.train_epochs+1))
             for epoch_idx in epochs:
-                model, train_loss = trainer.train_epoch()
+                model, train_loss = trainer.train_epoch(logger)
                 test_auc, test_acc = evaluator.get_evaluation_result(model, test_loader)
                 eval_info = {
                 'epoch': epoch_idx,
                 'train_loss': train_loss,
                 'test_auc': test_auc,
                 'test_acc': test_acc,
-
                 }
                 logger.info('=== Epoch {}, train loss {:.4f}, test auc {:.4f}, test acc {:.4f} ==='.format(*eval_info.values()))
             
@@ -290,12 +287,6 @@ def main():
                     logger.info('train failed')
                     continue
 
-                wandb.log({
-                    "Test Accuracy": test_acc,
-                    "Test AUC": test_auc,
-                    "Train Loss": train_loss,
-                    })
-            
                 if epoch_idx % args.lr_decay_step == 0:
                     for param in optimizer.param_groups:
                         param['lr'] = args.lr_decay_factor * param['lr']
@@ -309,6 +300,14 @@ def main():
                     best_lr = sub_args.train_lr
                     best_state = copy.deepcopy(model.state_dict())
 
+                wandb.log({
+                    "Test Accuracy": test_acc,
+                    "Test AUC": test_auc,
+                    "Best Accuracy": best_acc,
+                    "Best AUC": best_auc,
+                    "Train Loss": train_loss,
+                    })
+            
             th.save(best_state, f'./parameters/{args.key}_{args.dataset}_{best_auc:.4f}.pt')
             logger.info(f"Training ends. The best testing auc {best_auc:.4f} acc {best_acc:.4f} at epoch {best_epoch}")
 
