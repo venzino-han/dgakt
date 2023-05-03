@@ -5,7 +5,7 @@ import pickle
 import numpy as np
 import pandas as pd
 from collections import defaultdict
-
+import datetime
 from typing import Tuple
 
 import dgl
@@ -13,6 +13,21 @@ import torch as th
 from torch.utils.data import Dataset, DataLoader
 from scipy.sparse import coo_matrix
 import config
+# from itertools import islice
+from tqdm import tqdm
+from multiprocessing import Pool, cpu_count
+from functools import partial
+
+def _process_user_seq(self, user_seq_id):
+    user_seq = self.user_seq_dict[user_seq_id]
+    cids = user_seq[0]
+    target_cid = cids[-1]
+    uids = self.item_groups[target_cid][0]
+    n = min(self.seq_len, len(uids))
+    indices = np.random.choice(len(uids), n, replace=False)
+    return user_seq_id, uids[indices]
+
+
 def one_hot(idx, length):
     x = th.zeros([len(idx), length], dtype=th.float32)
     x[th.arange(len(idx)), idx] = 1.0
@@ -143,6 +158,7 @@ class KT_Sequence_Graph(Dataset):
         self.user_id_set = set()
         self.center_node = center_node
         self.exe_number = exe_number
+        self.item_groups = item_groups
 
         uids = []
         eids = []

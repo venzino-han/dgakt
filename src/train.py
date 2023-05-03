@@ -187,6 +187,7 @@ def train(args:EasyDict, train_loader, test_loader, logger):
     for epoch_idx in epochs:
         logger.debug(f'Epoch : {epoch_idx}')
     
+        train_loss = 1
         train_loss = train_epoch(model, optimizer, train_loader, 
                                  args.device, logger, 
                                  log_interval=args.log_interval,

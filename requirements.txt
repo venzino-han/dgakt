@@ -7,3 +7,5 @@ nltk
 sklearn
 sentence_transformers
 langdetect
+prettytable
+wandb
