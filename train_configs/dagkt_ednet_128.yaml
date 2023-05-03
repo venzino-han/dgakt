@@ -18,8 +18,8 @@ train:
   epochs: 20
   batch_size: 128
   learning_rates:
-    - 5e-3
-    - 4e-3
+    # - 5e-3
+    # - 4e-3
     - 3e-3
     - 2e-3
     - 1e-3

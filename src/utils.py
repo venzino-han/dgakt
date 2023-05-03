@@ -1,5 +1,6 @@
 import numpy as np
 from tqdm import tqdm
+import os 
 
 def get_time_lag(df):
     """
@@ -102,6 +103,8 @@ def get_args_from_yaml(yaml_path):
     model_cfg = common_cfgs['model']
     train_cfg = common_cfgs['train']
 
+    file_name = os.path.basename(yaml_path).replace('.yaml','')
+    print(file_name)
     with open(yaml_path) as f:
         cfgs = yaml.load(f, Loader=yaml.FullLoader)
     exp_data_cfg = cfgs.get('dataset', dict())
@@ -117,7 +120,7 @@ def get_args_from_yaml(yaml_path):
 
     args = EasyDict(
         {   
-            'key': cfgs['key'],
+            'key': cfgs.get('key', file_name), #if key does not exist, use file name as key
 
             'dataset': data_cfg['name'],
             'max_seq': data_cfg.get('max_seq'),
@@ -147,6 +150,7 @@ def get_args_from_yaml(yaml_path):
             'lr_decay_step': train_cfg.get('lr_decay_step'),
             'lr_decay_factor': train_cfg.get('lr_decay_factor'),
             'gamma': train_cfg.get('gamma', 0.5),
+            'lambda_': train_cfg.get('lambda', 0.),
 
         }
     )

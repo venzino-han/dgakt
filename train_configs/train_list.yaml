@@ -6,13 +6,24 @@ files:
 
   # - ./train_configs/sagkt_assist_64.yaml
   # - ./train_configs/sagkt_64.yaml
+  - ./train_configs/dagkt_assist_64_g0.0_l0.025.yaml
+  - ./train_configs/dagkt_assist_64_g0.25_l0.025.yaml
+  - ./train_configs/dagkt_assist_64_g0.5_l0.025.yaml
+  - ./train_configs/dagkt_assist_64_g0.75_l0.025.yaml
+  - ./train_configs/dagkt_assist_64_g1.0_l0.025.yaml
+
+  - ./train_configs/dagkt_assist_64_g0.5_l0.0.yaml
+  - ./train_configs/dagkt_assist_64_g0.5_l0.5.yaml
+  - ./train_configs/dagkt_assist_64_g0.5_l0.75.yaml
+  - ./train_configs/dagkt_assist_64_g0.5_l1.yaml
+  
   # - ./train_configs/dagkt_assist_64.yaml
   # - ./train_configs/dagkt_assist_128.yaml
   # - ./train_configs/dagkt_ednet_64.yaml
-  - ./train_configs/dagkt_ednet_128.yaml
-  - ./train_configs/dagkt_junyi_64.yaml
+  # - ./train_configs/dagkt_ednet_128.yaml
+  # - ./train_configs/dagkt_junyi_64.yaml
   
-  - ./train_configs/igmc_junyi_64.yaml
+  # - ./train_configs/igmc_junyi_64.yaml
 
   # - ./train_configs/igmc_assist_part_64.yaml
   # - ./train_configs/dagkt_assist_part_64.yaml

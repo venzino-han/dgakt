@@ -62,7 +62,7 @@ def pre_process_df(train_path, ques_path, split_ratio=0.8):
     
     # merge with question dataframe to get part feature
     print("Start merge question dataframe")
-    ques_df = pd.read_csv(ques_path)[["question_id", "part"]]
+    ques_df = pd.read_csv(ques_path)[["question_id", "part", "tags"]]
     df = df.merge(ques_df, how='left', left_on='content_id', right_on='question_id')
     df.drop(["question_id"], axis=1, inplace=True)
 
