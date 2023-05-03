@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 from collections import defaultdict
 import datetime
+from tqdm import tqdm
 from typing import Tuple
 
 import dgl
@@ -203,27 +204,6 @@ class KT_Sequence_Graph(Dataset):
         print('start item grouping')
         self.item_seq_dict = {}
         
-        # def _process_user_seq(user_seq_id):
-        #     user_seq = user_seq_dict[user_seq_id]
-        #     cids = user_seq[0]
-        #     target_cid = cids[-1]
-        #     uids = item_groups[target_cid][0]
-        #     n = min(self.seq_len, len(uids))
-        #     indices = np.random.choice(len(uids), n, replace=False)
-        #     return user_seq_id, uids[indices]
-        
-        # print(datetime.datetime.now())
-
-        # self._process_user_seq_partial = partial(_process_user_seq, self)
-        # with Pool(8) as pool:
-        #     results = pool.map(self._process_user_seq_partial, self.user_ids)
-
-        # print(datetime.datetime.now())
-        # for user_seq_id, uid_seq in results:
-        #     self.item_seq_dict[user_seq_id] = uid_seq
-        # print(datetime.datetime.now())
-
-        # print(len(self.user_ids))
         for user_seq_id in tqdm(self.user_ids):
             user_seq = self.user_seq_dict[user_seq_id]
             cids = user_seq[0]

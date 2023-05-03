@@ -3,7 +3,7 @@ key: igmc_junyi_64
 model:
   type: IGMC
   hop: 1
-  num_relations: 4
+  num_relations: 2
   latent_dims:
     - 32
     - 32
@@ -20,9 +20,9 @@ train:
   epochs: 20
   batch_size: 128
   learning_rates:
-    - 4e-3
-    - 3e-3
-    - 2e-3
+    # - 4e-3
+    # - 3e-3
+    # - 2e-3
     - 1e-3
     - 5e-4
   weight_decay: 0.0
