@@ -96,6 +96,7 @@ def count_parameters(model):
     print(f"Total Trainable Params: {total_params}")
     return total_params
 
+
 class Evaluator():
     def __init__(self, model_type, device, gamma=0.5) -> None:
         self.model_type = model_type
