@@ -178,7 +178,7 @@ class KT_Sequence_Graph(Dataset):
             correctness.extend(ans_c)
             interaction_count.extend(interaction_c)
 
-            if len(exe_id) < 2:
+            if len(exe_id) < config.MIN_LEN:
                 continue
 
             if len(exe_id) > self.seq_len:
@@ -211,8 +211,9 @@ class KT_Sequence_Graph(Dataset):
             uids = item_groups[target_cid][0]
             # print(type(uids),uids)
             n = min(self.seq_len, len(uids))
-            # indices = np.random.choice(len(uids), n, replace=False)
-            self.item_seq_dict[user_seq_id] = uids[-n:]
+            indices = np.random.choice(len(uids), n, replace=False)
+            # self.item_seq_dict[user_seq_id] = uids[-n:]
+            self.item_seq_dict[user_seq_id] = uids[indices]
 
         # build user-exe graph
         uids = interaction_df['user_id']
@@ -225,7 +226,7 @@ class KT_Sequence_Graph(Dataset):
         self.graph = self._build_user_exe_graph(uids, eids, correctness, ts, interaction_counts)
 
         # exe-KC dict
-        num_part = len(set(problem_df['part']))+1
+        num_part = len(set(problem_df['part']))
         print('num_part : ', num_part)
         
         self.item_part_dict = {}
@@ -360,11 +361,11 @@ class KT_Sequence_Graph(Dataset):
                                       center_node=self.center_node,
                                     )
 
-        n = subgraph.number_of_edges()
-        if n > 4000:
-            prob = (n-4000)/n
-            transform = dgl.DropEdge(prob)
-            subgraph = transform(subgraph)
+        # n = subgraph.number_of_edges()
+        # if n > 4000:
+        #     prob = (n-4000)/n
+        #     transform = dgl.DropEdge(prob)
+        #     subgraph = transform(subgraph)
 
 
         return subgraph, th.tensor(label, dtype=th.float32)

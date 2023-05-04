@@ -1,0 +1,30 @@
+---
+model:
+  type: DAGKT
+  latent_dims:
+    - 32
+    - 32
+  edge_dropout: 0.
+
+dataset:
+  name: ednet
+  max_seq: 64
+
+train:
+  device: 0
+  epochs: 20
+  batch_size: 128
+  learning_rates:
+    # - 5e-3
+    # - 4e-3
+    # - 3e-3
+    - 2e-3
+    - 1e-3
+    # - 5e-4
+  weight_decay: 0.0
+  lr_decay_step: 5
+  lr_decay_factor: 0.98
+  log_interval: 100
+  log_dir: log
+  gamma: 0.25
+  lambda: 0.025
