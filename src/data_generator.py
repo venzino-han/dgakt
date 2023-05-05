@@ -195,7 +195,7 @@ class KT_Sequence_Graph(Dataset):
             correctness.extend(ans_c)
             interaction_count.extend(interaction_c)
 
-            if len(exe_id) < 2:
+            if len(exe_id) < config.MIN_LEN:
                 continue
 
             if len(exe_id) > self.seq_len:
