@@ -30,7 +30,6 @@ from models.igmc import IGMC
 from models.igkt import IGKT_TS
 from models.igakt import IGAKT
 from models.dagkt_v2 import DAGKT
-# from models.dagkt_v3 import DAGKT
 from models.sagkt import SAGKT
 
 

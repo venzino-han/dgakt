@@ -16,9 +16,7 @@ from scipy.sparse import coo_matrix
 import config
 # from itertools import islice
 from tqdm import tqdm
-from multiprocessing import Pool, cpu_count, Manager, Process
-from functools import partial
-import asyncio
+import random
 
 
 def _process_user_seq(self, user_seq_id):
@@ -335,6 +333,9 @@ class KT_Sequence_Graph(Dataset):
 
         self.user_ids = new_user_ids_list
         print('filterd user_ids :', len(self.user_ids))
+
+    def limit_samples(self, n):
+        self.user_ids = random.sample(self.user_ids, n) 
 
     def __len__(self):
         return len(self.user_ids)
