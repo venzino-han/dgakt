@@ -1,6 +1,6 @@
 import pickle
 import pandas as pd
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, RandomSampler
 
 import config
 from data_generator import KT_Sequence_Graph, collate_data
@@ -41,9 +41,9 @@ def get_dataloader_junyi(data_path="junyi", batch_size=128, num_workers=8, seq_l
                                        seq_len=seq_len,
                                        center_node=center_node,
                                        )
-
+    test_seq_graph.limit_samples(n=config.JUNYI_TEST_SAMPLES)
     test_loader = DataLoader(test_seq_graph, batch_size=batch_size, shuffle=False, num_workers=num_workers,
-                                collate_fn=collate_data, pin_memory=True)
+                             collate_fn=collate_data, pin_memory=True)
 
     return train_loader, test_loader
 
