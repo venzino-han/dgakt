@@ -15,6 +15,7 @@ import time
 from easydict import EasyDict
 from prettytable import PrettyTable
 import wandb
+import logging
 
 from sklearn.metrics import roc_auc_score, accuracy_score, f1_score
 
@@ -172,12 +173,12 @@ class Traniner():
         loss = self.bce_loss_fn(preds,labels)
         return preds, loss
 
-    def train_epoch(self, logger):
+    def train_epoch(self):
         self.model.train()
-
         epoch_loss = 0.
         iter_loss, iter_mse, iter_cnt = 0., 0., 0
         iter_dur = []
+        logger = logging.getLogger(name=self.args.key)
 
         for iter_idx, batch in enumerate(self.train_loader, start=1):
             t_start = time.time()
@@ -274,7 +275,7 @@ def main():
             logger.info(f"Start training ... learning rate : {args.train_lr}")
             epochs = list(range(1, args.train_epochs+1))
             for epoch_idx in epochs:
-                model, train_loss = trainer.train_epoch(logger)
+                model, train_loss = trainer.train_epoch()
                 test_auc, test_acc = evaluator.get_evaluation_result(model, test_loader)
                 eval_info = {
                 'epoch': epoch_idx,
