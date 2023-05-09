@@ -110,7 +110,7 @@ if __name__=="__main__":
         # print(batch.edata['etype'])
         # print(batch.edata['label'])
         # print(batch.edata['ts'])
-        # print(batch.ndata['nlabel'])
+        # print(batch.ndata['x'])
         # print(label.shape)
         # print(label)
         # break

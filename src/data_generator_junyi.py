@@ -41,7 +41,7 @@ def get_dataloader_junyi(data_path="junyi", batch_size=128, num_workers=8, seq_l
                                        seq_len=seq_len,
                                        center_node=center_node,
                                        )
-    test_seq_graph.limit_samples(n=config.JUNYI_TEST_SAMPLES)
+    # test_seq_graph.limit_samples(n=config.JUNYI_TEST_SAMPLES)
     test_loader = DataLoader(test_seq_graph, batch_size=batch_size, shuffle=False, num_workers=num_workers,
                              collate_fn=collate_data, pin_memory=True)
 

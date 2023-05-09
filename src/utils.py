@@ -149,8 +149,8 @@ def get_args_from_yaml(yaml_path):
             'weight_decay': train_cfg.get('weight_decay', 0),
             'lr_decay_step': train_cfg.get('lr_decay_step'),
             'lr_decay_factor': train_cfg.get('lr_decay_factor'),
-            'gamma': train_cfg.get('gamma', 0.5),
-            'lambda_': train_cfg.get('lambda', 0.),
+            'gamma': train_cfg.get('gamma', 0.75),
+            'lambda_': train_cfg.get('lambda', 0.001),
 
         }
     )

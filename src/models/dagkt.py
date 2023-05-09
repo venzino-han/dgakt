@@ -12,8 +12,8 @@ from dgl.nn.pytorch.conv import EGATConv
 
 #     def forward(self, subg, nfeats):
 #         subg_x = subg.ndata['x']
-#         subg_u = subg.ndata['nlabel'][:, 1] == 1
-#         subg_i = subg.ndata['nlabel'][:, 0] == 1
+#         subg_u = subg.ndata['x'][:, 1] == 1
+#         subg_i = subg.ndata['x'][:, 0] == 1
 #         self.subg_rep = th.cat([subg_x[subg_u], subg_x[subg_i]],0)
 #         self.subg_
 
@@ -84,8 +84,8 @@ class DAGKT(nn.Module):
         states = []
 
         # get user, item idx --> vector
-        users = graph.ndata['nlabel'][:, 1] == 1
-        items = graph.ndata['nlabel'][:, 0] == 1
+        users = graph.ndata['x'][:, 1] == 1
+        items = graph.ndata['x'][:, 0] == 1
 
         x = node_x # original
         e = graph.edata['efeat']
@@ -102,8 +102,8 @@ class DAGKT(nn.Module):
             importance_applied_features = []
             for subg in subgs:
                 subg_x = subg.ndata['x']
-                subg_u = subg.ndata['nlabel'][:, 1] == 1
-                subg_i = subg.ndata['nlabel'][:, 0] == 1
+                subg_u = subg.ndata['x'][:, 1] == 1
+                subg_i = subg.ndata['x'][:, 0] == 1
                 subg_rep = th.cat([subg_x[subg_u], subg_x[subg_i]], dim=1)
                 # print(subg_rep.shape)
                 num_node = subg.num_nodes()

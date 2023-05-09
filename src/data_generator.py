@@ -103,9 +103,8 @@ def get_subgraph_label(graph:dgl.graph,
     node_labels = [0,1] + [2]*len(u_neighbors) + [3]*len(i_neighbors) \
                     + [4]*len(part_neighbors) + [5]*len(tag_neighbors) 
     subgraph.ndata['ntype'] = th.tensor(node_labels, dtype=th.int8)
-    nlabel_vector = one_hot(node_labels, 6)
-    subgraph.ndata['nlabel'] = one_hot(node_labels, 6)
-    subgraph.ndata['x'] = subgraph.ndata['nlabel']
+    nlabel_vector = one_hot(node_labels, config.IN_FEATS)
+    subgraph.ndata['x'] = nlabel_vector
 
     # set edge mask to zero as to remove links between target nodes in training process
     subgraph = dgl.add_self_loop(subgraph)
@@ -195,7 +194,7 @@ class KT_Sequence_Graph(Dataset):
             correctness.extend(ans_c)
             interaction_count.extend(interaction_c)
 
-            if len(exe_id) < 2:
+            if len(exe_id) < config.MIN_LEN:
                 continue
 
             if len(exe_id) > self.seq_len:
@@ -257,8 +256,10 @@ class KT_Sequence_Graph(Dataset):
         eid_list = []
         tag_list = []
         for eid, tag_set in zip(eids,tags):
+            if tag_set == ' ':
+                continue
             try:
-                tag_set = tag_set.split()
+                tag_set = str(tag_set).split()
             except:
                 continue
             tag_set = map(int, tag_set)
@@ -324,7 +325,7 @@ class KT_Sequence_Graph(Dataset):
         
         new_user_ids_list = []
         for user_seq_id in self.user_ids:
-            exe_id, part, ans_c, ts, interaction_counts = self.user_seq_dict[user_seq_id]
+            _, part, _, _, _ = self.user_seq_dict[user_seq_id]
             target_item_part = part[-1]
             if target_item_part in part_set:
                 new_user_ids_list.append(user_seq_id)
@@ -342,7 +343,7 @@ class KT_Sequence_Graph(Dataset):
     
     def __getitem__(self, index):
         user_seq_id = self.user_ids[index]
-        exe_id, part, ans_c, ts, interaction_counts = self.user_seq_dict[user_seq_id]
+        exe_id, _, ans_c, _, _ = self.user_seq_dict[user_seq_id]
         u_id = self.item_seq_dict[user_seq_id]
 
         #build graph
@@ -360,9 +361,7 @@ class KT_Sequence_Graph(Dataset):
         i_neighbors = i_neighbors[i_neighbors!=u_idx]
 
         part_neighbors = [self.item_part_dict[i_idx]] + [self.item_part_dict[i_neighbor] for i_neighbor in i_neighbors]
-        # tag_neighbors = [self.item_tag_dict[i_idx]] + [self.item_tag_dict[i_neighbor] for i_neighbor in i_neighbors]
         tag_neighbors = list(self.item_tag_dict[i_idx])
-
         for i_neighbor in i_neighbors:
             tag_neighbors += list(self.item_tag_dict[i_neighbor])
 
