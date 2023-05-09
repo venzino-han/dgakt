@@ -83,6 +83,14 @@ def add_center_node(graph, nlabel_vector):
         data=edata
     )
 
+def limit_edges(subgraph):
+    n = subgraph.number_of_edges()
+    if n > config.LIMIT_EDGE_NUM:
+        prob = (n-config.LIMIT_EDGE_NUM)/n
+        transform = dgl.DropEdge(prob)
+        subgraph = transform(subgraph)
+    return subgraph
+
 
 """
 subgraph extraction 
@@ -130,6 +138,9 @@ def get_subgraph_label(graph:dgl.graph,
     if use_count:
         efeats.append(ts)
     subgraph.edata['efeat'] = th.cat(efeats, dim=1)
+
+    if config.LIMIT_EDGES:
+        subgraph = limit_edges(subgraph)
 
     if use_center_node :
         # add center node 
@@ -208,7 +219,7 @@ class KT_Sequence_Graph(Dataset):
 
             if len(exe_id) > self.seq_len:
                 initial = len(exe_id) % self.seq_len
-                if initial > 2:
+                if initial >= config.MIN_LEN:
                     self.user_ids.append(f"{user_id}_0")
                     self.user_seq_dict[f"{user_id}_0"] = (
                         exe_id[:initial], part[:initial], ans_c[:initial], ts[:initial], interaction_c[:initial]
@@ -390,14 +401,6 @@ class KT_Sequence_Graph(Dataset):
                                       use_ts = self.args.use_ts,
                                       use_count = self.args.use_count
                                     )
-
-        if config.LIMIT_EDGES:
-            n = subgraph.number_of_edges()
-            if n > config.LIMIT_EDGE_NUM:
-                prob = (n-config.LIMIT_EDGE_NUM)/n
-                transform = dgl.DropEdge(prob)
-                subgraph = transform(subgraph)
-
 
         return subgraph, th.tensor(label, dtype=th.float32)
     

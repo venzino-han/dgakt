@@ -6,7 +6,7 @@ import config
 from data_generator import KT_Sequence_Graph, collate_data
 
 
-def get_dataloader_junyi(args, data_path="junyi", batch_size=128, num_workers=8, seq_len=64,center_node=True):
+def get_dataloader_junyi(args, data_path="junyi", batch_size=128, num_workers=8, seq_len=64, center_node=True):
 
     train_df = pd.read_csv(f"data/{data_path}/train_df.csv")
     test_df = pd.read_csv(f"data/{data_path}/test_df.csv")
