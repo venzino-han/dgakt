@@ -75,7 +75,9 @@ def get_subgraph_label(graph:dgl.graph,
                        u_neighbors:th.tensor, i_neighbors:th.tensor,
                        part_neighbors:th.tensor,
                        tag_neighbors:th.tensor,
-                       center_node:bool = True,
+                       use_center_node:bool = True,
+                       use_ts=True,
+                       use_count=True,
                        )->dgl.graph:
     nodes = th.cat([u_node_idx, i_node_idx, u_neighbors, i_neighbors,
                     part_neighbors, tag_neighbors
@@ -105,9 +107,15 @@ def get_subgraph_label(graph:dgl.graph,
     ts = subgraph.edata['ts'].unsqueeze(1)
     label = subgraph.edata['label'].unsqueeze(1)
     interaction_counts = subgraph.edata['interaction_counts'].unsqueeze(1)
-    subgraph.edata['efeat'] = th.cat([label, ts, interaction_counts], dim=1)
 
-    if center_node :
+    efeats = [label]
+    if use_ts:
+        efeats.append(ts)
+    if use_count:
+        efeats.append(ts)
+    subgraph.edata['efeat'] = th.cat(efeats, dim=1)
+
+    if use_center_node :
         # add center node 
         new_ndata ={
             'ntype': th.tensor([-1], dtype=th.int8),
@@ -273,7 +281,8 @@ class KT_Sequence_Graph(Dataset):
         edata = {
             'etype':th.tensor(np.array([2]*len(src)), dtype=th.int8),
             'label':th.tensor(np.array([1]*len(src)), dtype=th.float32),
-            'ts': th.tensor(np.array([-1]*len(src)), dtype=th.float32),
+            'ts': th.tensor(np.array([1]*len(src)), dtype=th.float32),
+            'interaction_counts': th.tensor(np.array([1]*len(src)), dtype=th.float32),
         }
         self.graph.add_edges(src, dst, 
             data=edata
@@ -295,7 +304,8 @@ class KT_Sequence_Graph(Dataset):
         edata = {
             'etype':th.tensor(np.array([3]*len(src)), dtype=th.int8),
             'label':th.tensor(np.array([1]*len(src)), dtype=th.float32),
-            'ts': th.tensor(np.array([-1]*len(src)), dtype=th.float32),
+            'ts': th.tensor(np.array([1]*len(src)), dtype=th.float32),
+            'interaction_counts': th.tensor(np.array([1]*len(src)), dtype=th.float32),
         }
         self.graph.add_edges(src, dst, 
             data=edata
@@ -358,7 +368,9 @@ class KT_Sequence_Graph(Dataset):
                                       i_neighbors=th.tensor(i_neighbors),
                                       part_neighbors=th.tensor(part_neighbors),
                                       tag_neighbors=th.tensor(tag_neighbors),
-                                      center_node=self.center_node,
+                                      use_center_node=self.center_node,
+                                      use_ts = self.args.use_ts,
+                                      use_count = self.args.use_count
                                     )
 
         # n = subgraph.number_of_edges()
