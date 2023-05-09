@@ -124,8 +124,8 @@ def get_args_from_yaml(yaml_path):
 
             'dataset': data_cfg['name'],
             'max_seq': data_cfg.get('max_seq'),
-            'use_ts': data_cfg.get('use_ts', True)
-            'use_count': data_cfg.get('use_count', True)
+            'use_ts': data_cfg.get('use_ts', True),
+            'use_count': data_cfg.get('use_count', True),
             
             # model configs
             'model_type': model_cfg['type'],
