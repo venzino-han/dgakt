@@ -112,14 +112,14 @@ if __name__=="__main__":
 
     # for i, (batch, label) in enumerate(test_loader):
     #     print(i)
-    #     # print(batch.ndata['ntype'])
-    #     # print(batch.edata['etype'])
-    #     # print(batch.edata['label'])
-    #     # print(batch.edata['ts'])
-    #     # print(batch.ndata['x'])
-    #     # print(label.shape)
-    #     # print(label)
-    #     # break
+    # #     # print(batch.ndata['ntype'])
+    # #     # print(batch.edata['etype'])
+    # #     # print(batch.edata['label'])
+    # #     # print(batch.edata['ts'])
+    # #     # print(batch.ndata['x'])
+    # #     # print(label.shape)
+    # #     # print(label)
+    # #     # break
     #     pass
     
     data_path='assist'
@@ -161,6 +161,8 @@ if __name__=="__main__":
                                        )
     # test_loader = DataLoader(test_seq_graph, batch_size=batch_size, shuffle=False, num_workers=num_workers,
     #                             collate_fn=collate_data, pin_memory=True)
-    print('len : ', len(test_seq_graph))
+    # print('len : ', len(test_seq_graph))
+    # print('uid : ',test_seq_graph.user_ids[3343])
+    # print(test_seq_graph[3343])
     print('uid : ',test_seq_graph.user_ids[3344])
     print(test_seq_graph[3344])

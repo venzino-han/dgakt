@@ -57,31 +57,36 @@ def process_user_seq(user_seq_id, user_seq_dict, item_groups, seq_len, item_seq_
     indices = np.random.choice(len(uids), n, replace=False)
     item_seq_dict[user_seq_id] = uids[indices]
 
-def add_center_node(graph, nlabel_vector):
+def add_center_node(subgraph, nlabel_vector):
+    new_id = subgraph.num_nodes()
     new_ndata ={
-        'ntype': th.tensor([-1], dtype=th.int8),
-        'node_id': th.tensor([-1], dtype=th.int32),
+        '_ID': th.tensor([new_id], dtype=th.int32),
+        'ntype': th.tensor([6], dtype=th.int8),
+        # 'node_id': th.tensor([-1], dtype=th.int32),
     }
-    graph.add_nodes(num=1, data=new_ndata)
+    subgraph.add_nodes(num=1, data=new_ndata)
 
     ## nodes to connect with center node
-    num_new_edges = graph.num_nodes() - 1
+    num_new_edges = subgraph.num_nodes() - 1
 
-    src = [num_new_edges]*num_new_edges + list(range(num_new_edges))
-    dst = list(range(num_new_edges)) + [num_new_edges]*num_new_edges
+    # src = [num_new_edges]*num_new_edges + list(range(num_new_edges))
+    # dst = list(range(num_new_edges)) + [num_new_edges]*num_new_edges
+    src = list(range(num_new_edges))
+    dst = [num_new_edges]*num_new_edges
 
     edata = {
                 'etype':th.tensor(np.array([3]*num_new_edges*2), dtype=th.int8),
                 'label':th.tensor(np.array([-1]*num_new_edges*2), dtype=th.float32),
-                'ts': th.tensor(np.array([-1]*num_new_edges*2), dtype=th.float32),
+                # 'ts': th.tensor(np.array([-1]*num_new_edges*2), dtype=th.float32),
                 'edge_mask': th.tensor(np.array([0]*num_new_edges*2), dtype=th.float32),
                 'edge_mask2': th.tensor(np.array([1]*num_new_edges*2), dtype=th.float32),
                 'efeat2': th.cat([nlabel_vector, nlabel_vector], dim=0)
             }
             
-    graph.add_edges(src, dst, 
+    subgraph.add_edges(src, dst, 
         data=edata
     )
+    return subgraph
 
 def limit_edges(subgraph):
     n = subgraph.number_of_edges()
@@ -100,18 +105,18 @@ def get_subgraph_label(graph:dgl.graph,
                        u_neighbors:th.tensor, i_neighbors:th.tensor,
                        part_neighbors:th.tensor,
                        tag_neighbors:th.tensor,
-                       use_center_node:bool = True,
-                       use_ts=True,
-                       use_count=True,
+                       use_center_node:bool=True,
+                       use_ts:bool=True,
+                       use_count:bool=True,
                        )->dgl.graph:
     nodes = th.cat([u_node_idx, i_node_idx, u_neighbors, i_neighbors,
-                    part_neighbors, tag_neighbors
-                    ], dim=0,) 
+                    part_neighbors, tag_neighbors], dim=0,) 
     nodes = nodes.type(th.int32)
     nodes = th.clamp(nodes, min=0, max=graph.number_of_nodes()-1)
     subgraph = dgl.node_subgraph(graph, nodes, store_ids=True) 
     node_labels = [0,1] + [2]*len(u_neighbors) + [3]*len(i_neighbors) \
                     + [4]*len(part_neighbors) + [5]*len(tag_neighbors) 
+
     subgraph.ndata['ntype'] = th.tensor(node_labels, dtype=th.int8)
     nlabel_vector = one_hot(node_labels, config.IN_FEATS)
     subgraph.ndata['x'] = nlabel_vector
@@ -136,39 +141,14 @@ def get_subgraph_label(graph:dgl.graph,
     if use_ts:
         efeats.append(ts)
     if use_count:
-        efeats.append(ts)
+        efeats.append(interaction_counts)
     subgraph.edata['efeat'] = th.cat(efeats, dim=1)
 
     if config.LIMIT_EDGES:
         subgraph = limit_edges(subgraph)
 
     if use_center_node :
-        # add center node 
-        new_ndata ={
-            'ntype': th.tensor([-1], dtype=th.int8),
-            'node_id': th.tensor([-1], dtype=th.int32),
-        }
-        subgraph.add_nodes(num=1, data=new_ndata)
-
-        # nodes to connect with center node
-        num_new_edges = subgraph.num_nodes() - 1
-        src = list(range(num_new_edges))
-        dst = [num_new_edges]*num_new_edges
-
-        edata = {
-                    'etype':th.tensor(np.array([3]*num_new_edges), dtype=th.int8),
-                    'label':th.tensor(np.array([1]*num_new_edges), dtype=th.float32),
-                    'ts': th.tensor(np.array([1]*num_new_edges), dtype=th.float32),
-                    # 'interaction_counts': th.tensor(np.array([1]*num_new_edges), dtype=th.int32),
-                    'edge_mask': th.tensor(np.array([0]*num_new_edges), dtype=th.float32),
-                    'edge_mask2': th.tensor(np.array([1]*num_new_edges), dtype=th.float32),
-                    'efeat2': nlabel_vector,
-                    # 'efeat2': th.cat([nlabel_vector, nlabel_vector], dim=0),
-                }
-                
-        subgraph.add_edges(src, dst, 
-            data=edata
-        )
+        subgraph = add_center_node(subgraph, nlabel_vector) 
 
     return subgraph
 
@@ -299,7 +279,7 @@ class KT_Sequence_Graph(Dataset):
         eids_, parts_ = dedup_edges(eids, parts)
         ndata = {
             'ntype': th.tensor(np.array([2]*num_part), dtype=th.int8),
-            'node_id': th.tensor(list(range(self.num_nodes, self.num_nodes+num_part)), dtype=th.int32),
+            # 'node_id': th.tensor(list(range(self.num_nodes, self.num_nodes+num_part)), dtype=th.int32),
         }
         self.graph.add_nodes(num=n, data=ndata)
 
@@ -322,7 +302,7 @@ class KT_Sequence_Graph(Dataset):
         eids_, tags_ = dedup_edges(eids, tag_list)
         ndata = {
             'ntype': th.tensor(np.array([3]*num_tag), dtype=th.int8),
-            'node_id': th.tensor(list(range(self.num_nodes+num_part, self.num_nodes+num_part+num_tag)), dtype=th.int32),
+            # 'node_id': th.tensor(list(range(self.num_nodes+num_part, self.num_nodes+num_part+num_tag)), dtype=th.int32),
         }
         self.graph.add_nodes(num=n, data=ndata)
         
@@ -357,8 +337,8 @@ class KT_Sequence_Graph(Dataset):
         self.user_ids = new_user_ids_list
         print('filterd user_ids :', len(self.user_ids))
 
-    def limit_samples(self, n):
-        self.user_ids = random.sample(self.user_ids, n) 
+    # def limit_samples(self, n):
+    #     self.user_ids = random.sample(self.user_ids, n) 
 
     def __len__(self):
         return len(self.user_ids)
@@ -399,7 +379,7 @@ class KT_Sequence_Graph(Dataset):
                                       tag_neighbors=th.tensor(tag_neighbors),
                                       use_center_node=self.center_node,
                                       use_ts = self.args.use_ts,
-                                      use_count = self.args.use_count
+                                      use_count = self.args.use_count,
                                     )
 
         return subgraph, th.tensor(label, dtype=th.float32)
@@ -420,7 +400,7 @@ class KT_Sequence_Graph(Dataset):
         
         # build graph 
         graph = dgl.from_scipy(sp_mat=user_exe_matrix, idtype=th.int32)
-        graph.ndata['node_id'] = th.tensor(list(range(self.num_nodes)), dtype=th.int32)
+        # graph.ndata['node_id'] = th.tensor(list(range(self.num_nodes)), dtype=th.int32)
         graph.ndata['ntype'] = th.tensor(self.exe_number*[0]+self.num_user*[1], dtype=th.int8)
         
         graph.edata['label'] = th.tensor(correctness, dtype=th.float32)
