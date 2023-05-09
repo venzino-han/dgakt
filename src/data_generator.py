@@ -160,7 +160,8 @@ def dedup_edges(srcs, dsts) -> Tuple[list, list]:
 
 
 class KT_Sequence_Graph(Dataset):
-    def __init__(self, user_groups, item_groups, interaction_df, problem_df, exe_number=config.EDNET_EXE, seq_len=64, center_node=True):
+    def __init__(self, args, user_groups, item_groups, interaction_df, problem_df, exe_number=config.EDNET_EXE, seq_len=64, center_node=True):
+        self.args = args
         self.user_seq_dict = {}
         self.seq_len = seq_len
         self.user_ids = []
