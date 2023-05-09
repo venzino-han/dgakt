@@ -10,7 +10,7 @@ import config
 from data_generator import KT_Sequence_Graph, collate_data
 
 
-def get_dataloader_assist(data_path='assist', batch_size=128, 
+def get_dataloader_assist(args, data_path='assist', batch_size=128, 
                           num_workers=8, seq_len=64, center_node=True):
 
     train_df = pd.read_csv(f'data/{data_path}/train_df.csv')
@@ -22,7 +22,7 @@ def get_dataloader_assist(data_path='assist', batch_size=128,
     with open(f"data/{data_path}/train_item_group.pkl.zip", 'rb') as pick:
         train_item_group = pickle.load(pick)
     
-    train_seq_graph = KT_Sequence_Graph(train_user_group, train_item_group, 
+    train_seq_graph = KT_Sequence_Graph(args, train_user_group, train_item_group, 
                                         interaction_df=train_df,
                                         problem_df=problem_df,
                                         exe_number=config.ASSIST_EXE,
@@ -39,7 +39,7 @@ def get_dataloader_assist(data_path='assist', batch_size=128,
     with open(f"data/{data_path}/val_item_group.pkl.zip", 'rb') as pick:
         val_item_group = pickle.load(pick)
 
-    test_seq_graph = KT_Sequence_Graph(val_user_group, val_item_group,
+    test_seq_graph = KT_Sequence_Graph(args, val_user_group, val_item_group,
                                        interaction_df=test_df,
                                        problem_df=problem_df,
                                        exe_number=config.ASSIST_EXE,
@@ -52,7 +52,7 @@ def get_dataloader_assist(data_path='assist', batch_size=128,
     return train_loader, test_loader
 
 
-def get_dataloader_assist_part(data_path='assist_part', batch_size=128, 
+def get_dataloader_assist_part(args, data_path='assist_part', batch_size=128, 
                                 num_workers=8, seq_len=64, center_node=True):
 
     train_df = pd.read_csv(f'data/{data_path}/train_df.csv')
@@ -64,7 +64,7 @@ def get_dataloader_assist_part(data_path='assist_part', batch_size=128,
     with open(f"data/{data_path}/train_item_group.pkl.zip", 'rb') as pick:
         train_item_group = pickle.load(pick)
     
-    train_seq_graph = KT_Sequence_Graph(train_user_group, train_item_group, 
+    train_seq_graph = KT_Sequence_Graph(args, train_user_group, train_item_group, 
                                         interaction_df=train_df,
                                         problem_df=problem_df,
                                         exe_number=config.ASSIST_EXE,
@@ -82,7 +82,7 @@ def get_dataloader_assist_part(data_path='assist_part', batch_size=128,
     with open(f"data/{data_path}/val_item_group.pkl.zip", 'rb') as pick:
         val_item_group = pickle.load(pick)
 
-    test_seq_graph = KT_Sequence_Graph(val_user_group, val_item_group,
+    test_seq_graph = KT_Sequence_Graph(args, val_user_group, val_item_group,
                                        interaction_df=test_df,
                                        problem_df=problem_df,
                                        exe_number=config.ASSIST_EXE,

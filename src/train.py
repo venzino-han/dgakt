@@ -70,14 +70,14 @@ def get_model(args):
 
     if args.model_type == 'DAGKT':
         model = DAGKT(in_nfeats=args.in_feats,
-                     in_efeats=3,
+                     in_efeats=args.in_efeats,
                      latent_dim=args.latent_dims,
                      edge_dropout=args.edge_dropout,
                      ).to(args.device)
 
     if args.model_type == 'SAGKT':
         model = SAGKT(in_nfeats=args.in_feats,
-                     in_efeats=2,
+                     in_efeats=args.in_efeats,
                      latent_dim=args.latent_dims,
                      edge_dropout=args.edge_dropout,
                      ).to(args.device)
@@ -241,13 +241,13 @@ def main():
             center_node=False
         else: center_node=True
         print('center_node :', center_node)
-        train_loader, test_loader = dataloader_manager( 
+        train_loader, test_loader = dataloader_manager(args=sub_args,
                                                        data_path=sub_args.dataset,
                                                        batch_size=sub_args.batch_size, 
                                                        num_workers=config.NUM_WORKER,
                                                        seq_len=sub_args.max_seq,
                                                        center_node=center_node
-                                                        )
+        )
         best_lr = None
         for lr in args.train_lrs:
             date_time = datetime.now().strftime("%Y%m%d_%H:%M")
@@ -255,7 +255,7 @@ def main():
             run_id = wandb.util.generate_id()
             with wandb.init(id=run_id, name=f"{args.key}_{lr}_{date_time}", 
                              project="DAGKT", config=sub_args):
-            
+              
                 """prepare data and set model"""
                 args.in_feats = config.IN_FEATS
                 model = get_model(args)

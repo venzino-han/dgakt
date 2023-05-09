@@ -20,7 +20,7 @@ dataset:
 
 train:
   device: 0
-  epochs: 20
+  epochs: 40
   batch_size: 128
   learning_rates:
     - 1e-3
