@@ -16,8 +16,8 @@ from scipy.sparse import coo_matrix
 import config
 # from itertools import islice
 from tqdm import tqdm
-from multiprocessing import Pool, cpu_count
-from functools import partial
+import random
+
 
 def _process_user_seq(self, user_seq_id):
     user_seq = self.user_seq_dict[user_seq_id]
@@ -39,6 +39,23 @@ def normalize_timestamp(timestamps, standard_ts):
     timestamps = abs(timestamps - standard_ts)
     timestamps = 1 - ((timestamps - th.min(timestamps)) / ((th.max(timestamps) - th.min(timestamps) + 1e-9)))
     return timestamps
+
+def process_user_seq_fixed_random(user_seq_id, user_seq_dict, item_groups, seq_len, item_seq_dict, indices=None):
+    user_seq = user_seq_dict[user_seq_id]
+    cids = user_seq[0]
+    target_cid = cids[-1]
+    uids = item_groups[target_cid][0]
+    indices = indices[indices<len(uids)]
+    item_seq_dict[user_seq_id] = uids[indices]
+
+def process_user_seq(user_seq_id, user_seq_dict, item_groups, seq_len, item_seq_dict, indices=None):
+    user_seq = user_seq_dict[user_seq_id]
+    cids = user_seq[0]
+    target_cid = cids[-1]
+    uids = item_groups[target_cid][0]
+    n = min(seq_len, len(uids))
+    indices = np.random.choice(len(uids), n, replace=False)
+    item_seq_dict[user_seq_id] = uids[indices]
 
 def add_center_node(graph, nlabel_vector):
     new_ndata ={
@@ -211,18 +228,16 @@ class KT_Sequence_Graph(Dataset):
 
         
         print('start item grouping')
-        self.item_seq_dict = {}
-        
+        item_seq_dict = dict()
+        if config.RANDOM_USERS:
+            sequence_extraction_func = process_user_seq
+        else: 
+            sequence_extraction_func = process_user_seq_fixed_random #for faster process in Junyi dataset
+
+        fixed_indices = np.random.choice(self.seq_len*3, self.seq_len, replace=False)
         for user_seq_id in tqdm(self.user_ids):
-            user_seq = self.user_seq_dict[user_seq_id]
-            cids = user_seq[0]
-            target_cid = cids[-1]
-            uids = item_groups[target_cid][0]
-            # print(type(uids),uids)
-            n = min(self.seq_len, len(uids))
-            indices = np.random.choice(len(uids), n, replace=False)
-            # self.item_seq_dict[user_seq_id] = uids[-n:]
-            self.item_seq_dict[user_seq_id] = uids[indices]
+            sequence_extraction_func(user_seq_id, self.user_seq_dict, item_groups, self.seq_len, item_seq_dict, indices=fixed_indices)
+        self.item_seq_dict = item_seq_dict
 
         # build user-exe graph
         uids = interaction_df['user_id']
@@ -330,6 +345,9 @@ class KT_Sequence_Graph(Dataset):
         self.user_ids = new_user_ids_list
         print('filterd user_ids :', len(self.user_ids))
 
+    def limit_samples(self, n):
+        self.user_ids = random.sample(self.user_ids, n) 
+
     def __len__(self):
         return len(self.user_ids)
     
@@ -374,11 +392,12 @@ class KT_Sequence_Graph(Dataset):
                                       use_count = self.args.use_count
                                     )
 
-        # n = subgraph.number_of_edges()
-        # if n > 4000:
-        #     prob = (n-4000)/n
-        #     transform = dgl.DropEdge(prob)
-        #     subgraph = transform(subgraph)
+        if config.LIMIT_EDGES:
+            n = subgraph.number_of_edges()
+            if n > config.LIMIT_EDGE_NUM:
+                prob = (n-config.LIMIT_EDGE_NUM)/n
+                transform = dgl.DropEdge(prob)
+                subgraph = transform(subgraph)
 
 
         return subgraph, th.tensor(label, dtype=th.float32)
@@ -395,8 +414,6 @@ class KT_Sequence_Graph(Dataset):
         correctness = np.concatenate((correctness, correctness))
         interaction_counts = np.concatenate((interaction_counts, interaction_counts))
         ts = np.concatenate((ts, ts))
-        # print(len(src_nodes), len(dst_nodes), len(correctness))
-
         user_exe_matrix = coo_matrix((correctness, (src_nodes, dst_nodes)), shape=(self.num_nodes, self.num_nodes))
         
         # build graph 
