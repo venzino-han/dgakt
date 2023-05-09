@@ -255,6 +255,7 @@ def main():
             run_id = wandb.util.generate_id()
             with wandb.init(id=run_id, name=f"{args.key}_{lr}_{date_time}", 
                              project="DAGKT", config=sub_args):
+              
                 """prepare data and set model"""
                 args.in_feats = config.IN_FEATS
                 model = get_model(args)

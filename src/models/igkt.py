@@ -63,8 +63,8 @@ class IGKT(nn.Module):
             concat_states.append(x)
         concat_states = th.cat(concat_states, 1)
         
-        users = block.ndata['nlabel'][:, 0] == 1
-        items = block.ndata['nlabel'][:, 1] == 1
+        users = block.ndata['x'][:, 0] == 1
+        items = block.ndata['x'][:, 1] == 1
         x = th.cat([concat_states[users], concat_states[items]], 1)
         x = F.relu(self.lin1(x))
         x = F.dropout(x, p=0.5, training=self.training)
@@ -139,8 +139,8 @@ class IGKT_TS(IGKT):
             concat_states.append(x)
         concat_states = th.cat(concat_states, 1)
         
-        users = block.ndata['nlabel'][:, 0] == 1
-        items = block.ndata['nlabel'][:, 1] == 1
+        users = block.ndata['x'][:, 0] == 1
+        items = block.ndata['x'][:, 1] == 1
         x = th.cat([concat_states[users], concat_states[items]], 1)
         x = F.relu(self.lin1(x))
         x = F.dropout(x, p=0.5, training=self.training)

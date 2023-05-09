@@ -59,8 +59,8 @@ class IGAKT(nn.Module):
         states = []
 
         # get user, item idx --> vector
-        users = graph.ndata['nlabel'][:, 1] == 1
-        items = graph.ndata['nlabel'][:, 0] == 1
+        users = graph.ndata['x'][:, 1] == 1
+        items = graph.ndata['x'][:, 0] == 1
 
         x = node_x # original
         e = graph.edata['efeat']
