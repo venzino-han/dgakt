@@ -6,7 +6,7 @@ import config
 from data_generator import KT_Sequence_Graph, collate_data
 
 
-def get_dataloader_junyi(data_path="junyi", batch_size=128, num_workers=8, seq_len=64,center_node=True):
+def get_dataloader_junyi(args, data_path="junyi", batch_size=128, num_workers=8, seq_len=64,center_node=True):
 
     train_df = pd.read_csv(f"data/{data_path}/train_df.csv")
     test_df = pd.read_csv(f"data/{data_path}/test_df.csv")
@@ -17,7 +17,7 @@ def get_dataloader_junyi(data_path="junyi", batch_size=128, num_workers=8, seq_l
     with open(f"data/{data_path}/train_item_group.pkl.zip", 'rb') as pick:
         train_item_group = pickle.load(pick)
     
-    train_seq_graph = KT_Sequence_Graph(train_user_group, train_item_group, 
+    train_seq_graph = KT_Sequence_Graph(args, train_user_group, train_item_group, 
                                         interaction_df=train_df,
                                         problem_df=problem_df,
                                         exe_number=config.JUNYI_EXE,
@@ -34,21 +34,21 @@ def get_dataloader_junyi(data_path="junyi", batch_size=128, num_workers=8, seq_l
     with open(f"data/{data_path}/val_item_group.pkl.zip", 'rb') as pick:
         val_item_group = pickle.load(pick)
 
-    test_seq_graph = KT_Sequence_Graph(val_user_group, val_item_group, 
+    test_seq_graph = KT_Sequence_Graph(args, val_user_group, val_item_group, 
                                        interaction_df=test_df,
                                        problem_df=problem_df,
                                        exe_number=config.JUNYI_EXE,
                                        seq_len=seq_len,
                                        center_node=center_node,
                                        )
-    test_seq_graph.limit_samples(n=config.JUNYI_TEST_SAMPLES)
+    # test_seq_graph.limit_samples(n=config.JUNYI_TEST_SAMPLES)
     test_loader = DataLoader(test_seq_graph, batch_size=batch_size, shuffle=False, num_workers=num_workers,
                              collate_fn=collate_data, pin_memory=True)
 
     return train_loader, test_loader
 
 
-def get_dataloader_junyi_part(data_path='junyi_part', batch_size=128, num_workers=8, seq_len=64,
+def get_dataloader_junyi_part(args, data_path='junyi_part', batch_size=128, num_workers=8, seq_len=64,
                         center_node=True):
 
     train_df = pd.read_csv(f"data/{data_path}/train_df.csv")
@@ -60,7 +60,7 @@ def get_dataloader_junyi_part(data_path='junyi_part', batch_size=128, num_worker
     with open(f"data/{data_path}/train_item_group.pkl.zip", 'rb') as pick:
         train_item_group = pickle.load(pick)
     
-    train_seq_graph = KT_Sequence_Graph(train_user_group, train_item_group, 
+    train_seq_graph = KT_Sequence_Graph(args, train_user_group, train_item_group, 
                                         interaction_df=train_df,
                                         problem_df=problem_df,
                                         exe_number=config.JUNYI_EXE,
@@ -78,7 +78,7 @@ def get_dataloader_junyi_part(data_path='junyi_part', batch_size=128, num_worker
     with open(f"data/{data_path}/val_item_group.pkl.zip", 'rb') as pick:
         val_item_group = pickle.load(pick)
 
-    test_seq_graph = KT_Sequence_Graph(val_user_group, val_item_group, 
+    test_seq_graph = KT_Sequence_Graph(args, val_user_group, val_item_group, 
                                        interaction_df=test_df,
                                        problem_df=problem_df,
                                        exe_number=config.JUNYI_EXE,
