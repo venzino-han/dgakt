@@ -60,8 +60,8 @@ def process_user_seq(user_seq_id, user_seq_dict, item_groups, seq_len, item_seq_
 def add_center_node(subgraph, nlabel_vector):
     new_id = subgraph.num_nodes()
     new_ndata ={
-        '_ID': th.tensor([new_id], dtype=th.int32),
-        'ntype': th.tensor([6], dtype=th.int8),
+        # '_ID': th.tensor([new_id], dtype=th.int32),
+        'ntype': th.tensor([-1], dtype=th.int8),
         # 'node_id': th.tensor([-1], dtype=th.int32),
     }
     subgraph.add_nodes(num=1, data=new_ndata)
@@ -75,17 +75,18 @@ def add_center_node(subgraph, nlabel_vector):
     dst = [num_new_edges]*num_new_edges
 
     edata = {
-                'etype':th.tensor(np.array([3]*num_new_edges*2), dtype=th.int8),
-                'label':th.tensor(np.array([-1]*num_new_edges*2), dtype=th.float32),
-                # 'ts': th.tensor(np.array([-1]*num_new_edges*2), dtype=th.float32),
-                'edge_mask': th.tensor(np.array([0]*num_new_edges*2), dtype=th.float32),
-                'edge_mask2': th.tensor(np.array([1]*num_new_edges*2), dtype=th.float32),
-                'efeat2': th.cat([nlabel_vector, nlabel_vector], dim=0)
+                'etype':th.tensor(np.array([3]*num_new_edges), dtype=th.int8),
+                'label':th.tensor(np.array([-1]*num_new_edges), dtype=th.float32),
+                'ts': th.tensor(np.array([-1]*num_new_edges), dtype=th.float32),
+                'edge_mask': th.tensor(np.array([0]*num_new_edges), dtype=th.float32),
+                'edge_mask2': th.tensor(np.array([1]*num_new_edges), dtype=th.float32),
+                'efeat2': th.cat([nlabel_vector], dim=0)
             }
             
     subgraph.add_edges(src, dst, 
         data=edata
     )
+
     return subgraph
 
 def limit_edges(subgraph):
