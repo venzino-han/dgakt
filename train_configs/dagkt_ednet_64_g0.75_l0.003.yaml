@@ -5,7 +5,6 @@ model:
     - 32
     - 32
   edge_dropout: 0.
-  in_efeats : 3
 
 dataset:
   name: ednet
@@ -17,8 +16,8 @@ train:
     # - 5e-3
     # - 4e-3
     # - 3e-3
-    - 1e-3
     - 2e-3
+    - 1e-3
     - 5e-4
   weight_decay: 0.0
   lr_decay_step: 5
@@ -26,4 +25,4 @@ train:
   log_interval: 100
   log_dir: log
   gamma: 0.75
-  lambda: 0.001
+  lambda: 0.003

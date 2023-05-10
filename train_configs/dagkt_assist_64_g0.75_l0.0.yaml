@@ -1,0 +1,18 @@
+---
+# key: dagkt_assist_64_g0.2_l0.025
+model:
+  type: DAGKT
+  hop: 1
+  num_relations: 4
+  latent_dims:
+    - 32
+    - 32
+  edge_dropout: 0.
+
+dataset:
+  name: assist
+  max_seq: 64
+
+train:
+  gamma: 0.75
+  lambda: 0.0

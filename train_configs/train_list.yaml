@@ -17,7 +17,22 @@ files:
   # - ./train_configs/dagkt_assist_64_g0.5_l0.5.yaml
   # - ./train_configs/dagkt_assist_64_g0.5_l0.75.yaml
   # - ./train_configs/dagkt_assist_64_g0.5_l1.0.yaml
-  
+
+  # - ./train_configs/dagkt_assist_64_g0.75_l0.001.yaml
+
+  # - ./train_configs/dagkt_ednet_64_g0.75_l0.001.yaml
+  - ./train_configs/dagkt_ednet_64_r_only.yaml
+  - ./train_configs/dagkt_ednet_64_wo_count.yaml
+  - ./train_configs/dagkt_ednet_64_wo_ts.yaml
+
+  - ./train_configs/dagkt_assist_64_r_only.yaml
+  - ./train_configs/dagkt_assist_64_wo_count.yaml
+  - ./train_configs/dagkt_assist_64_wo_ts.yaml
+
+  - ./train_configs/dagkt_junyi_64_r_only.yaml
+  - ./train_configs/dagkt_junyi_64_wo_count.yaml
+  - ./train_configs/dagkt_junyi_64_wo_ts.yaml
+
   # - ./train_configs/dagkt_ednet_64_g0.0_l0.025.yaml
   # - ./train_configs/dagkt_ednet_64_g0.25_l0.025.yaml
 
@@ -30,8 +45,10 @@ files:
   # - ./train_configs/dagkt_ednet_64_g0.5_l0.075.yaml
   # - ./train_configs/dagkt_ednet_64_g0.5_l0.1.yaml
   
-  - ./train_configs/dagkt_ednet_64_g0.25_l0.001.yaml
-  - ./train_configs/dagkt_ednet_64_g0.75_l0.001.yaml
+  # - ./train_configs/dagkt_ednet_64_g0.25_l0.001.yaml
+  # - ./train_configs/dagkt_ednet_64_g0.75_l0.001.yaml
+
+
 
 
   # - ./train_configs/dagkt_assist_64.yaml
