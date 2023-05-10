@@ -28,22 +28,20 @@ class DAGKT(nn.Module):
             self.local_egats.append(EGATConv(in_node_feats=latent_dim[i],
                                             in_edge_feats=in_efeats,
                                             out_node_feats=latent_dim[i+1],
-                                            out_edge_feats=16,
-                                            # out_edge_feats=latent_dim[i+1],
+                                            out_edge_feats=in_efeats*2,
                                             num_heads=num_heads))
             self.agg_layers_1.append(nn.Linear(latent_dim[i+1]*num_heads, latent_dim[i+1]))
             self.global_egats.append(EGATConv(in_node_feats=latent_dim[i+1],
                                             in_edge_feats=in_nfeats,
                                             out_node_feats=latent_dim[i+1],
-                                            out_edge_feats=16,
-                                            # out_edge_feats=latent_dim[i+1],
+                                            out_edge_feats=in_efeats*2,
                                             num_heads=num_heads))
             self.agg_layers_2.append(nn.Linear(latent_dim[i+1]*num_heads, latent_dim[i+1]))
             
 
         self.lin1_ui = nn.Linear(sum(latent_dim[1:])*2, 128)
         self.lin1_subg = nn.Linear(sum(latent_dim[1:])*1, 128)
-        self.dropout = nn.Dropout(0.3)
+        self.dropout = nn.Dropout(0.5)
         self.lin2_ui = nn.Linear(128, 1)
         self.lin2_subg = nn.Linear(128, 1)
 
@@ -88,12 +86,10 @@ class DAGKT(nn.Module):
             x = agg_lin1(x)
             x = self.elu(x)
             ui_states.append(x)
-
-            x, _, attention = global_egat(graph=graph, nfeats=x, efeats=e2, norm=mask2, get_attention= True)
+            x, _, attention = global_egat(graph=graph, nfeats=x, efeats=e2, norm=mask2, get_attention=True)
             self.attention = attention
             x = x.flatten(1, 2) 
             x = agg_lin2(x)
-            # x = x.sum(dim=1)
             x = self.leakyrelu(x)
             graph.ndata['x'] = x
             subg_states.append(x)
@@ -111,10 +107,8 @@ class DAGKT(nn.Module):
         subg_x = self.lin2_subg(subg_x)
         ui_x = self.lin2_ui(ui_x)
         
-        # x = th.sigmoid(x)
         subg_x = th.sigmoid(subg_x)
         ui_x = th.sigmoid(ui_x)
-
         return subg_x[:, 0], ui_x[:, 0]
 
     def _get_subgraph_embedding(self, ui_states, subg_states, graph):
@@ -123,17 +117,8 @@ class DAGKT(nn.Module):
         items = graph.ndata['ntype'] == 1
         subgraphs = graph.ndata['ntype'] == -1
 
-        # print(ui_states[users].shape, ui_states[items].shape, subg_states[subgraphs].shape)
-
         ui_x = th.cat([ui_states[users], ui_states[items]], 1)
         subg_x = subg_states[subgraphs]
-
-                # if self.subgraph_embedding_from == 'center':
-        #     x = states[subgraphs]
-        # elif self.subgraph_embedding_from == 'user_item':
-        #     x = th.cat([states[users], states[items]], 1)
-        # else:
-        #     NotImplementedError()
 
         return ui_x, subg_x
 
