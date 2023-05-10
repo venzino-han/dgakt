@@ -29,7 +29,8 @@ if __name__ == '__main__':
     parser.add_argument("-p","--path", type=str, default="./data")
     args = parser.parse_args()
     if args.dataset == 'all':
-        dataset_files_dict = assist_files_dict | ednet_file_dict | junyi_file_dict
+        dataset_files_dict = assist_files_dict | ednet_file_dict 
+        dataset_files_dict = dataset_files_dict | junyi_file_dict
     if args.dataset == 'assist':
         dataset_files_dict = assist_files_dict
     for output, url  in dataset_files_dict.items():
