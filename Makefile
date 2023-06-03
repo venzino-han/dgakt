@@ -1,7 +1,7 @@
 default: build
 
 help:
-	@echo 'Management commands for dgakt:'
+	@echo 'Management commands for dgkt:'
 	@echo
 	@echo 'Usage:'
 	@echo '    make build          Build image'
@@ -14,18 +14,18 @@ preprocess:
 
 build:
 	@echo "Building Docker image"
-	@docker build . -t dgakt 
+	@docker build . -t dgkt 
 
 run:
 	@echo "Booting up Docker Container"
-	@docker run -it --gpus '"device=0"' --ipc=host --name dgakt -v `pwd`:/workspace/dgakt dgakt:latest /bin/bash
+	@docker run -it --gpus '"device=0"' --ipc=host --name dgkt -v `pwd`:/workspace/dgkt dgkt:latest /bin/bash
 
 up: build run
 
 rm: 
-	@docker rm dgakt
+	@docker rm dgkt
 
 stop:
-	@docker stop dgakt
+	@docker stop dgkt
 
 reset: stop rm

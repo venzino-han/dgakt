@@ -10,4 +10,4 @@ RUN pip install --upgrade pip
 COPY requirements.txt .
 RUN pip install  dgl -f https://data.dgl.ai/wheels/cu116/repo.html
 RUN pip install -r requirements.txt
-WORKDIR /workspace/dgakt
+WORKDIR /workspace/dgkt

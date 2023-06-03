@@ -52,6 +52,10 @@ def get_model(args):
                      in_efeats=args.in_efeats,
                      latent_dim=args.latent_dims,
                      ).to(args.device)
+
+    if args.parameters is not None:
+        model.load_state_dict(th.load(f"./parameters/{args.parameters}"))
+
     return model
 
 
@@ -231,9 +235,8 @@ def main():
             """prepare data and set model"""
             args.in_feats = config.IN_FEATS
             model = get_model(args)
-            if args.parameters is not None:
-                model.load_state_dict(th.load(f"./parameters/{args.parameters}"))
             logger.info("Loading network finished ...\n")
+            
             count_parameters(model)
             # wandb.watch(model)
             optimizer = optim.Adam(model.parameters(), lr=args.train_lr, weight_decay=args.weight_decay)
@@ -281,7 +284,7 @@ def main():
                 #     "Train Loss": train_loss,
                 #     })
             
-            th.save(best_state, f'./parameters/{args.key}_{args.dataset}_{best_auc:.4f}.pt')
+            th.save(best_state, f'./parameters/{args.key}_{best_auc:.4f}.pt')
             del model
             th.cuda.empty_cache()
 

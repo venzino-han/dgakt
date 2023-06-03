@@ -1,16 +1,18 @@
 ---
+key: dgkt_assist_64_test
 model:
   type: DGKT
   latent_dims:
     - 32
     - 32
   in_efeats: 3
+  # parameters: dgkt_assist_64_assist_0.8903.pt
+  parameters: dgkt_assist_64_0.9157.pt
 
 dataset:
   name: assist
   max_seq: 64
 
 train:
-  batch_size: 32
   gamma: 0.75
   lambda: 0.001
