@@ -1,18 +1,15 @@
 ---
 model:
-  type: IGMC
-  hop: 1
-  num_relations: 4
+  type: DGKT
   latent_dims:
     - 32
     - 32
-    - 32
-    - 32
-  edge_dropout: 0.
+  in_efeats: 3
 
 dataset:
   name: assist
   max_seq: 64
 
 train:
-  epochs: 20
+  gamma: 0.75
+  lambda: 0.001

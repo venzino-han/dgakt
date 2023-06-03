@@ -4,8 +4,7 @@ networkx
 scipy
 easydict
 nltk
-sklearn
-sentence_transformers
+scikit-learn
 langdetect
 prettytable
 wandb

@@ -27,9 +27,7 @@ import config
 
 
 from models.igmc import IGMC
-from models.igkt import IGKT_TS
-from models.igakt import IGAKT
-from models.dagkt_v2 import DAGKT
+from models.dgkt import DGKT
 from models.sagkt import SAGKT
 
 
@@ -43,43 +41,16 @@ def get_model(args):
                      edge_dropout=args.edge_dropout,
                      ).to(args.device)
 
-    if args.model_type == 'IGKT':
-        model = IGMC(in_feats=args.in_feats, 
-                     latent_dim=args.latent_dims,
-                     num_relations=args.num_relations, 
-                     num_bases=4, 
-                     regression=True,
-                     edge_dropout=args.edge_dropout,
-                     ).to(args.device)
-
-    if args.model_type == 'IGKT_TS':
-        model = IGKT_TS(in_feats=args.in_feats, 
-                     latent_dim=args.latent_dims,
-                     num_relations=args.num_relations, 
-                     num_bases=4, 
-                     regression=True,
-                     edge_dropout=args.edge_dropout,
-                     ).to(args.device)
-
-    if args.model_type == 'IGAKT':
-        model = IGAKT(in_nfeats=args.in_feats,
-                     in_efeats=2,
-                     latent_dim=args.latent_dims,
-                     edge_dropout=args.edge_dropout,
-                     ).to(args.device)
-
-    if args.model_type == 'DAGKT':
-        model = DAGKT(in_nfeats=args.in_feats,
+    if args.model_type == 'DGKT':
+        model = DGKT(in_nfeats=args.in_feats,
                      in_efeats=args.in_efeats,
                      latent_dim=args.latent_dims,
-                     edge_dropout=args.edge_dropout,
                      ).to(args.device)
 
     if args.model_type == 'SAGKT':
         model = SAGKT(in_nfeats=args.in_feats,
                      in_efeats=args.in_efeats,
                      latent_dim=args.latent_dims,
-                     edge_dropout=args.edge_dropout,
                      ).to(args.device)
     return model
 
@@ -92,6 +63,7 @@ def count_parameters(model):
         params = parameter.numel()
         table.add_row([name, params])
         total_params+=params
+
     print(table)
     print(f"Total Trainable Params: {total_params}")
     return total_params
@@ -103,7 +75,7 @@ class Evaluator():
         self.gamma = gamma
         self.device = device
         
-        if model_type in ["DAGKT", "SAGKT"]:
+        if model_type in ["DGKT", "SAGKT"]:
             self.get_model_prediction = self._get_dual_aspect_model_prediction
         elif model_type in ["IGMC"]:
             self.get_model_prediction = self._get_single_aspect_model_prediction
@@ -151,7 +123,7 @@ class Traniner():
         self.lambda_ = args.lambda_
         self.device = args.device
 
-        if args.model_type in ['DAGKT', 'SAGKT']:
+        if args.model_type in ['DGKT', 'SAGKT']:
             self._model_update = self._model_update_dual_aspect_loss
         elif args.model_type in ['IGMC']:
             self._model_update = self._model_update_single_aspect_loss
@@ -250,71 +222,72 @@ def main():
         )
         best_lr = None
         for lr in args.train_lrs:
-            date_time = datetime.now().strftime("%Y%m%d_%H:%M")
             sub_args['train_lr'] = lr
-            run_id = wandb.util.generate_id()
-            with wandb.init(id=run_id, name=f"{args.key}_{lr}_{date_time}", 
-                             project="DAGKT", config=sub_args):
+            # date_time = datetime.now().strftime("%Y%m%d_%H:%M")
+            # run_id = wandb.util.generate_id()
+            # with wandb.init(id=run_id, name=f"{args.key}_{lr}_{date_time}", 
+            #                  project="DGKT", config=sub_args):
               
-                """prepare data and set model"""
-                args.in_feats = config.IN_FEATS
-                model = get_model(args)
-                if args.parameters is not None:
-                    model.load_state_dict(th.load(f"./parameters/{args.parameters}"))
-                logger.info("Loading network finished ...\n")
-                count_parameters(model)
-                # wandb.watch(model)
-                optimizer = optim.Adam(model.parameters(), lr=args.train_lr, weight_decay=args.weight_decay)
-                trainer = Traniner(model, args, train_loader, optimizer)
-                evaluator = Evaluator(args.model_type, args.device, gamma=args.gamma)
+            """prepare data and set model"""
+            args.in_feats = config.IN_FEATS
+            model = get_model(args)
+            if args.parameters is not None:
+                model.load_state_dict(th.load(f"./parameters/{args.parameters}"))
+            logger.info("Loading network finished ...\n")
+            count_parameters(model)
+            # wandb.watch(model)
+            optimizer = optim.Adam(model.parameters(), lr=args.train_lr, weight_decay=args.weight_decay)
+            trainer = Traniner(model, args, train_loader, optimizer)
+            evaluator = Evaluator(args.model_type, args.device, gamma=args.gamma)
 
-                best_epoch = 0
-                best_auc, best_acc = 0, 0
+            best_epoch = 0
+            best_auc, best_acc = 0, 0
 
-                logger.info(f"Start training ... learning rate : {args.train_lr}")
-                epochs = list(range(1, args.train_epochs+1))
-                for epoch_idx in epochs:
-                    model, train_loss = trainer.train_epoch()
-                    test_auc, test_acc = evaluator.get_evaluation_result(model, test_loader)
-                    eval_info = {
-                    'epoch': epoch_idx,
-                    'train_loss': train_loss,
-                    'test_auc': test_auc,
-                    'test_acc': test_acc,
-                    }
-                    logger.info('=== Epoch {}, train loss {:.4f}, test auc {:.4f}, test acc {:.4f} ==='.format(*eval_info.values()))
-                
-                    if test_auc <=0.51:
-                        logger.info('train failed')
-                        continue
+            logger.info(f"Start training ... learning rate : {args.train_lr}")
+            epochs = list(range(1, args.train_epochs+1))
+            for epoch_idx in epochs:
+                model, train_loss = trainer.train_epoch()
+                test_auc, test_acc = evaluator.get_evaluation_result(model, test_loader)
+                eval_info = {
+                'epoch': epoch_idx,
+                'train_loss': train_loss,
+                'test_auc': test_auc,
+                'test_acc': test_acc,
+                }
+                logger.info('=== Epoch {}, train loss {:.4f}, test auc {:.4f}, test acc {:.4f} ==='.format(*eval_info.values()))
+            
+                if test_auc <=0.51:
+                    logger.info('train failed')
+                    continue
 
-                    if epoch_idx % args.lr_decay_step == 0:
-                        for param in optimizer.param_groups:
-                            param['lr'] = args.lr_decay_factor * param['lr']
-                            print('lr : ', param['lr'])            
+                if epoch_idx % args.lr_decay_step == 0:
+                    for param in optimizer.param_groups:
+                        param['lr'] = args.lr_decay_factor * param['lr']
+                        print('lr : ', param['lr'])            
 
-                    if best_auc < test_auc:
-                        logger.info(f'new best test auc {test_auc:.4f} acc {test_acc:.4f} ===')
-                        best_epoch = epoch_idx
-                        best_auc = test_auc
-                        best_acc = test_acc
-                        best_lr = sub_args.train_lr
-                        best_state = copy.deepcopy(model.state_dict())
+                if best_auc < test_auc:
+                    logger.info(f'new best test auc {test_auc:.4f} acc {test_acc:.4f} ===')
+                    best_epoch = epoch_idx
+                    best_auc = test_auc
+                    best_acc = test_acc
+                    best_lr = sub_args.train_lr
+                    best_state = copy.deepcopy(model.state_dict())
 
-                    wandb.log({
-                        "Test Accuracy": test_acc,
-                        "Test AUC": test_auc,
-                        "Best Accuracy": best_acc,
-                        "Best AUC": best_auc,
-                        "Train Loss": train_loss,
-                        })
-                
-                th.save(best_state, f'./parameters/{args.key}_{args.dataset}_{best_auc:.4f}.pt')
-                del model
-                th.cuda.empty_cache()
+                # wandb.log({
+                #     "Test Accuracy": test_acc,
+                #     "Test AUC": test_auc,
+                #     "Best Accuracy": best_acc,
+                #     "Best AUC": best_auc,
+                #     "Train Loss": train_loss,
+                #     })
+            
+            th.save(best_state, f'./parameters/{args.key}_{args.dataset}_{best_auc:.4f}.pt')
+            del model
+            th.cuda.empty_cache()
+
             logger.info(f"Training ends. The best testing auc {best_auc:.4f} acc {best_acc:.4f} at epoch {best_epoch}")
             best_auc_acc_lr_list.append((best_auc, best_acc, best_lr))
-            wandb.finish()
+            # wandb.finish()
 
         best_auc, best_acc, best_lr = max(best_auc_acc_lr_list, key = lambda x: x[0])
         best_auc_list = [x[0] for x in best_auc_acc_lr_list]

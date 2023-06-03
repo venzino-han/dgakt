@@ -137,7 +137,7 @@ def get_args_from_yaml(yaml_path):
             'node_features': model_cfg.get('node_features'),
             'parameters': model_cfg.get('parameters'),
             'num_relations': model_cfg.get('num_relations', 5),
-            'edge_dropout': model_cfg['edge_dropout'],
+            'edge_dropout': model_cfg.get('edge_dropout'),
 
             'latent_dims': model_cfg.get('latent_dims'), # baseline model
 

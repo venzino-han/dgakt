@@ -17,13 +17,12 @@ from sklearn.metrics import roc_auc_score, accuracy_score, f1_score
 from utils import get_logger, get_args_from_yaml
 from data_generator_ednet import get_dataloader, get_dataloader_part
 from data_generator_assist import get_dataloader_assist, get_dataloader_assist_part
+from data_generator_junyi import get_dataloader_junyi
 import config
 
 
 from models.igmc import IGMC
-from models.igkt import IGKT_TS
-from models.igakt import IGAKT
-from models.dagkt_v2 import DAGKT
+from models.dgakt import DGAKT
 from models.sagkt import SAGKT
 
     
@@ -53,8 +52,6 @@ def evaluate(model, loader, device):
     # val_f1 = f1_score(list(map(round,val_labels)), list(map(round,val_preds)))
     return val_auc, val_acc, graphs, val_labels, val_preds, attention_list
 
-NUM_WORKER = 16
-
 def test(args:EasyDict, center_node, logger):
     th.manual_seed(0)
     np.random.seed(0)
@@ -71,18 +68,16 @@ def test(args:EasyDict, center_node, logger):
                      edge_dropout=args.edge_dropout,
                      ).to(args.device)
 
-    if args.model_type == 'DAGKT':
-        model = DAGKT(in_nfeats=in_feats,
+    if args.model_type == 'dgakt':
+        model = DGAKT(in_nfeats=in_feats,
                      in_efeats=2,
                      latent_dim=args.latent_dims,
-                     edge_dropout=args.edge_dropout,
                      ).to(args.device)
 
     if args.model_type == 'SAGKT':
         model = SAGKT(in_nfeats=in_feats,
                      in_efeats=2,
                      latent_dim=args.latent_dims,
-                     edge_dropout=args.edge_dropout,
                      ).to(args.device)
 
     if args.parameters is not None:
@@ -94,7 +89,7 @@ def test(args:EasyDict, center_node, logger):
     train_loader, test_loader = dataloader_manager( 
                                                     data_path=args.dataset,
                                                     batch_size=1, 
-                                                    num_workers=NUM_WORKER,
+                                                    num_workers=config.NUM_WORKER,
                                                     seq_len=args.max_seq,
                                                     center_node=center_node
                                                     )

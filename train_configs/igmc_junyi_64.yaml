@@ -1,9 +1,8 @@
 ---
-key: igmc_junyi_64
 model:
   type: IGMC
   hop: 1
-  num_relations: 2
+  num_relations: 4
   latent_dims:
     - 32
     - 32
@@ -16,17 +15,4 @@ dataset:
   max_seq: 64
 
 train:
-  device: 0
   epochs: 20
-  batch_size: 128
-  learning_rates:
-    # - 4e-3
-    # - 3e-3
-    # - 2e-3
-    - 1e-3
-    - 5e-4
-  weight_decay: 0.0
-  lr_decay_step: 5
-  lr_decay_factor: 0.98
-  log_interval: 100
-  log_dir: log

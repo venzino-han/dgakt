@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
     for p in ['assist', 'ednet', 'junyi']:
         path = f'{args.path}/{p}'
-        os.makedirs(path, EXIST_OK=True)
+        os.makedirs(path, exist_ok=True)
     
     if args.dataset == 'all':
         dataset_files_dict = dict(chain(assist_files_dict.items(), junyi_files_dict.items(), ednet_files_dict.items()))

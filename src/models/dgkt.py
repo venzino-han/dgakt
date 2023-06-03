@@ -6,13 +6,12 @@ from .egatconv import EGATConv
 import copy
 
 
-class DAGKT(nn.Module):
+class DGKT(nn.Module):
 
     def __init__(self, in_nfeats, in_efeats, latent_dim,
-                 num_heads=4, edge_dropout=0.2, subgraph_embedding_from='center'):
+                 num_heads=4, subgraph_embedding_from='center'):
                  
-        super(DAGKT, self).__init__()
-        self.edge_dropout = edge_dropout
+        super(DGKT, self).__init__()
         self.in_nfeats = in_nfeats
         self.subgraph_embedding_from = subgraph_embedding_from
         self.elu = nn.ELU()
@@ -67,8 +66,6 @@ class DAGKT(nn.Module):
 
     def forward(self, graph):
         """ graph : subgraph batch """
-        graph = edge_drop(graph, self.edge_dropout, self.training)
-
         graph.edata['norm'] = graph.edata['edge_mask']
         node_x = graph.ndata['x'].float()
 
@@ -121,19 +118,3 @@ class DAGKT(nn.Module):
         subg_x = subg_states[subgraphs]
 
         return ui_x, subg_x
-
-
-
-def edge_drop(graph, edge_dropout=0.2, training=True):
-    assert edge_dropout >= 0.0 and edge_dropout <= 1.0, 'Invalid dropout rate.'
-
-    if not training:
-        return graph
-
-    # set edge mask to zero in directional mode
-    src, _ = graph.edges()
-    to_drop = src.new_full((graph.number_of_edges(), ), edge_dropout, dtype=th.float)
-    to_drop = th.bernoulli(to_drop).to(th.bool)
-    graph.edata['edge_mask'][to_drop] = 0
-
-    return graph

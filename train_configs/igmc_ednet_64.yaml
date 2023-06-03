@@ -1,18 +1,18 @@
 ---
-# key: dagkt_assist_64_g0.2_l0.025
 model:
-  type: DAGKT
-  hop: 1
+  type: IGMC
   num_relations: 4
   latent_dims:
+    - 32
+    - 32
     - 32
     - 32
   edge_dropout: 0.
 
 dataset:
-  name: assist
+  name: ednet
   max_seq: 64
 
 train:
-  gamma: 0.75
-  lambda: 0.0
+  epochs: 20
+  batch_size: 256
