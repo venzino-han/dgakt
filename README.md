@@ -1,9 +1,7 @@
-# AI506 term project
+# Dual Attention Graph-based Knowledge Tracing
 
 # How to run 
 
-## dataset
-- Put all original dataset into `dataset` directory
 
 ## Docker Container
 - Docker container use dgkt project directory as volume 
@@ -11,7 +9,7 @@
 
 ## Download datasets
 1. `make up` : build docker image and start docker container
-3. `python3 download_datasets.py` : start data preprocessing in 
+3. `python3 download_datasets.py` : download datasets
 
 ## Preprocessing
 1. `make up` : build docker image and start docker container
