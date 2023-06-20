@@ -21,21 +21,22 @@ def group_seq(df, groupby_key, cols, save_path):
     del group, df
     return
 
-def save_user_item_group(data_path, train_features=["user_id", "content_id", "answered_correctly", "timestamp", 'part']):
+def save_user_item_group(train_df, val_df, test_df, data_path, train_features=["user_id", "content_id", "answered_correctly", "timestamp", 'part']):
     print("Start group pre-process")
     t_s = time.time()
-    train_path = f'data/{data_path}/train_df.csv'
-    test_path = f'data/{data_path}/test_df.csv'
-    train_df = pd.read_csv(train_path)[train_features]
-    test_df = pd.read_csv(test_path)[train_features]
-    print(len(train_df), len(test_df))
-    
+    train_df = train_df[train_features]
+    val_df = val_df[train_features]
+    test_df = test_df[train_features]
+    print(len(train_df), len(val_df), len(test_df))
 
     group_seq(df=train_df, groupby_key="user_id", cols=train_features, save_path=f"data/{data_path}/train_user_group.pkl.zip")
     group_seq(df=train_df, groupby_key="content_id", cols=train_features, save_path=f"data/{data_path}/train_item_group.pkl.zip")
 
-    group_seq(df=test_df, groupby_key="user_id", cols=train_features, save_path=f"data/{data_path}/val_user_group.pkl.zip")
-    group_seq(df=test_df, groupby_key="content_id", cols=train_features, save_path=f"data/{data_path}/val_item_group.pkl.zip")
+    group_seq(df=val_df, groupby_key="user_id", cols=train_features, save_path=f"data/{data_path}/val_user_group.pkl.zip")
+    group_seq(df=val_df, groupby_key="content_id", cols=train_features, save_path=f"data/{data_path}/val_item_group.pkl.zip")
+
+    group_seq(df=test_df, groupby_key="user_id", cols=train_features, save_path=f"data/{data_path}/test_user_group.pkl.zip")
+    group_seq(df=test_df, groupby_key="content_id", cols=train_features, save_path=f"data/{data_path}/test_item_group.pkl.zip")
     
     print("Complete grouping, execution time {:.2f} s".format(time.time()-t_s))
 
@@ -49,7 +50,7 @@ def count_interactions(df):
         user_count_dict[uid]+=1
     return interaction_counts
 
-def pre_process_df(train_path, ques_path, split_ratio=0.8):
+def pre_process_df(train_path, ques_path, train_ratio=0.6, val_ratio=0.2, test_ratio=0.2):
     print("Start pre-process")
     t_s = time.time()
     df = pd.read_csv(train_path)
@@ -71,8 +72,14 @@ def pre_process_df(train_path, ques_path, split_ratio=0.8):
     print(df.head(10))
 
     num_rows = df.shape[0]
-    val_df = df[int(num_rows*split_ratio):]
-    train_df = df[:int(num_rows*split_ratio)]
+    train_cut = int(num_rows*train_ratio)
+    val_cut = int(num_rows*(train_ratio+val_ratio))
+    train_df = df[:train_cut]
+    val_df = df[train_cut:val_cut]
+    val_graph_df = df[:val_cut]
+    test_df = df[val_cut:]
+    test_graph_df = df
+
 
     print("Train dataframe shape after process ({}, {})/ Val dataframe shape after process({}, {})".format(train_df.shape[0], train_df.shape[1], val_df.shape[0], val_df.shape[1]))
     print("====================")
@@ -90,14 +97,12 @@ def pre_process_df(train_path, ques_path, split_ratio=0.8):
     print("====================")
     print("Complete pre-process, execution time {:.2f} s".format(time.time()-t_s))
 
-    return train_df, df
+    return train_df, val_df, val_graph_df, test_df, test_graph_df
 
 
 
 if __name__=="__main__":
 
-    # EDNET_TRAIN_FEATURES = ["user_id", "content_id", "part", "task_container_id", "time_lag", "prior_question_elapsed_time",
-    #                         "answered_correctly", "prior_question_had_explanation", "user_answer", "timestamp"]
     BASIC_TRAIN_FEATURES = ["user_id", "content_id", "answered_correctly", "timestamp", 'part']
     
     import argparse
@@ -127,10 +132,13 @@ if __name__=="__main__":
     train_path = train_path_dict.get(args.dataset)
     question_path = question_path_dict.get(args.dataset)
 
+    train_df, val_df, val_graph_df, test_df, test_graph_df = pre_process_df(train_path, question_path)
+    train_df, val_df, test_df = train_df[BASIC_TRAIN_FEATURES+['interaction_counts']], val_df[BASIC_TRAIN_FEATURES+['interaction_counts']], test_df[BASIC_TRAIN_FEATURES+['interaction_counts']]
+    val_graph_df, test_graph_df = val_graph_df[BASIC_TRAIN_FEATURES+['interaction_counts']], test_graph_df[BASIC_TRAIN_FEATURES+['interaction_counts']]
     
-    train_df, test_df = pre_process_df(train_path, question_path)
-    train_df, test_df = train_df[BASIC_TRAIN_FEATURES+['interaction_counts']], test_df[BASIC_TRAIN_FEATURES+['interaction_counts']]
+    save_user_item_group(train_df, val_df, test_df, data_path=args.dataset, train_features=BASIC_TRAIN_FEATURES)
+    
     train_df.to_csv(f'data/{args.dataset}/train_df.csv')
-    test_df.to_csv(f'data/{args.dataset}/test_df.csv')
+    val_graph_df.to_csv(f'data/{args.dataset}/val_df.csv')
+    test_graph_df.to_csv(f'data/{args.dataset}/test_df.csv')
     
-    save_user_item_group(data_path=args.dataset, train_features=BASIC_TRAIN_FEATURES)

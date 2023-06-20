@@ -1,6 +1,6 @@
 ---
 model:
-  type: DGAKT
+  type: DGKT
   in_nfeats: 32
   out_nfeats: 32
   in_efeats: 3

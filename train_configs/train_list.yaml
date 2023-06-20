@@ -2,6 +2,6 @@ files:
   - ./train_configs/dgkt_assist_64.yaml
   - ./train_configs/dgkt_ednet_64.yaml
   - ./train_configs/dgkt_junyi_64.yaml
-  - ./train_configs/igmc_assist_64.yaml
-  - ./train_configs/igmc_ednet_64.yaml
-  - ./train_configs/igmc_junyi_64.yaml
+  # - ./train_configs/igmc_assist_64.yaml
+  # - ./train_configs/igmc_ednet_64.yaml
+  # - ./train_configs/igmc_junyi_64.yaml

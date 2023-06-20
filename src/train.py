@@ -201,7 +201,6 @@ def main():
         files = yaml.load(f, Loader=yaml.FullLoader)
     file_list = files['files']
     for f in file_list:
-        date_time = datetime.now().strftime("%Y%m%d_%H:%M:%S")
         args = get_args_from_yaml(f)
         logger = get_logger(name=args.key, path=f"{args.log_dir}/{args.key}.log")
         logger.info('train args')
@@ -217,7 +216,7 @@ def main():
             center_node=False
         else: center_node=True
         print('center_node :', center_node)
-        train_loader, test_loader = dataloader_manager(args=sub_args,
+        train_loader, val_loader, test_loader = dataloader_manager(args=sub_args,
                                                        data_path=sub_args.dataset,
                                                        batch_size=sub_args.batch_size, 
                                                        num_workers=config.NUM_WORKER,
@@ -227,10 +226,6 @@ def main():
         best_lr = None
         for lr in args.train_lrs:
             sub_args['train_lr'] = lr
-            # date_time = datetime.now().strftime("%Y%m%d_%H:%M")
-            # run_id = wandb.util.generate_id()
-            # with wandb.init(id=run_id, name=f"{args.key}_{lr}_{date_time}", 
-            #                  project="DGKT", config=sub_args):
               
             """prepare data and set model"""
             args.in_feats = config.IN_FEATS
@@ -238,28 +233,29 @@ def main():
             logger.info("Loading network finished ...\n")
             
             count_parameters(model)
-            # wandb.watch(model)
             optimizer = optim.Adam(model.parameters(), lr=args.train_lr, weight_decay=args.weight_decay)
             trainer = Traniner(model, args, train_loader, optimizer)
             evaluator = Evaluator(args.model_type, args.device, gamma=args.gamma)
 
             best_epoch = 0
+            best_val_auc, best_val_acc = 0, 0
             best_auc, best_acc = 0, 0
 
             logger.info(f"Start training ... learning rate : {args.train_lr}")
             epochs = list(range(1, args.train_epochs+1))
             for epoch_idx in epochs:
                 model, train_loss = trainer.train_epoch()
-                test_auc, test_acc = evaluator.get_evaluation_result(model, test_loader)
+                val_auc, val_acc = evaluator.get_evaluation_result(model, val_loader)
                 eval_info = {
                 'epoch': epoch_idx,
                 'train_loss': train_loss,
-                'test_auc': test_auc,
-                'test_acc': test_acc,
+                'val_auc': val_auc,
+                'val_acc': val_acc,
                 }
-                logger.info('=== Epoch {}, train loss {:.4f}, test auc {:.4f}, test acc {:.4f} ==='.format(*eval_info.values()))
+                logger.info('=== Epoch {}, train loss {:.4f}, val auc {:.4f}, val acc {:.4f} ==='.format(*eval_info.values()))
+                
             
-                if test_auc <=0.51:
+                if val_auc <=0.51:
                     logger.info('train failed')
                     continue
 
@@ -268,21 +264,21 @@ def main():
                         param['lr'] = args.lr_decay_factor * param['lr']
                         print('lr : ', param['lr'])            
 
-                if best_auc < test_auc:
-                    logger.info(f'new best test auc {test_auc:.4f} acc {test_acc:.4f} ===')
-                    best_epoch = epoch_idx
-                    best_auc = test_auc
-                    best_acc = test_acc
-                    best_lr = sub_args.train_lr
-                    best_state = copy.deepcopy(model.state_dict())
+                if best_val_auc < val_auc:
+                    best_val_acc
+                    logger.info(f'start test')
 
-                # wandb.log({
-                #     "Test Accuracy": test_acc,
-                #     "Test AUC": test_auc,
-                #     "Best Accuracy": best_acc,
-                #     "Best AUC": best_auc,
-                #     "Train Loss": train_loss,
-                #     })
+                    test_auc, test_acc = evaluator.get_evaluation_result(model, test_loader)
+                    logger.info(f'=== test auc {test_auc:.4f}, test acc {test_acc:.4f} ===')
+
+                    if best_auc < test_auc:
+                        logger.info(f'new best test auc {test_auc:.4f} acc {test_acc:.4f} ===')
+                        best_epoch = epoch_idx
+                        best_auc = test_auc
+                        best_acc = test_acc
+                        best_lr = sub_args.train_lr
+                        best_state = copy.deepcopy(model.state_dict())
+
             
             th.save(best_state, f'./parameters/{args.key}_{best_auc:.4f}.pt')
             del model
@@ -290,7 +286,6 @@ def main():
 
             logger.info(f"Training ends. The best testing auc {best_auc:.4f} acc {best_acc:.4f} at epoch {best_epoch}")
             best_auc_acc_lr_list.append((best_auc, best_acc, best_lr))
-            # wandb.finish()
 
         best_auc, best_acc, best_lr = max(best_auc_acc_lr_list, key = lambda x: x[0])
         best_auc_list = [x[0] for x in best_auc_acc_lr_list]

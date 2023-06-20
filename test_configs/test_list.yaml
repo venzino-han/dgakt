@@ -1,4 +1,4 @@
 files:
-  # - ./test_configs/dgkt_assist_64.yaml
-  # - ./test_configs/dgkt_ednet_64.yaml
+  - ./test_configs/dgkt_assist_64.yaml
+  - ./test_configs/dgkt_ednet_64.yaml
   - ./test_configs/dgkt_junyi_64.yaml

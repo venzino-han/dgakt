@@ -38,7 +38,7 @@ def test(args:EasyDict, center_node, logger):
     evaluator = Evaluator(args.model_type, args.device, gamma=args.gamma)
 
     dataloader_manager = DATALOADER_MAP.get(args.dataset)
-    train_loader, test_loader = dataloader_manager( 
+    train_loader, val_loader, test_loader = dataloader_manager( 
         args=args,
         data_path=args.dataset,
         batch_size=args.batch_size, 
