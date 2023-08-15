@@ -20,7 +20,7 @@ import logging
 from sklearn.metrics import roc_auc_score, accuracy_score, f1_score
 
 from utils import get_logger, get_args_from_yaml
-from data_generator_ednet import get_dataloader_ednet, get_dataloader_ednet_part
+from data_generator_ednet import get_dataloader_ednet, get_dataloader_ednet_part_a, get_dataloader_ednet_part_b, get_dataloader_ednet_part_c
 from data_generator_junyi import get_dataloader_junyi
 from data_generator_assist import get_dataloader_assist, get_dataloader_assist_part
 import config
@@ -185,18 +185,21 @@ from datetime import datetime
 
 DATALOADER_MAP = {
     'assist':get_dataloader_assist,
-    'assist_part':get_dataloader_assist_part,
-    'assist_part2':get_dataloader_assist_part,
+    'assist_part_a':get_dataloader_assist,
+    'assist_part_b':get_dataloader_assist,
+    'assist_part_c':get_dataloader_assist,
+    'assist_part2':get_dataloader_assist,
     'ednet':get_dataloader_ednet,
-    'ednet_part':get_dataloader_ednet_part,
-    'ednet_part2':get_dataloader_ednet_part,
+    'ednet_part_a':get_dataloader_ednet_part_a,
+    'ednet_part_b':get_dataloader_ednet,
+    'ednet_part_c':get_dataloader_ednet,
     'junyi':get_dataloader_junyi,
 }
 
 
 def main():
-    th.manual_seed(0)
-    np.random.seed(0)
+    th.manual_seed(28)
+    np.random.seed(42)
     with open('./train_configs/train_list.yaml') as f:
         files = yaml.load(f, Loader=yaml.FullLoader)
     file_list = files['files']
@@ -225,8 +228,9 @@ def main():
         )
         best_lr = None
         for lr in args.train_lrs:
+            date_time = datetime.now().strftime("%Y%m%d_%H:%M")
             sub_args['train_lr'] = lr
-              
+
             """prepare data and set model"""
             args.in_feats = config.IN_FEATS
             model = get_model(args)
@@ -235,6 +239,7 @@ def main():
             count_parameters(model)
             optimizer = optim.Adam(model.parameters(), lr=args.train_lr, weight_decay=args.weight_decay)
             trainer = Traniner(model, args, train_loader, optimizer)
+            val_trainer = Traniner(model, args, val_loader, optimizer)
             evaluator = Evaluator(args.model_type, args.device, gamma=args.gamma)
 
             best_epoch = 0
@@ -253,7 +258,7 @@ def main():
                 'val_acc': val_acc,
                 }
                 logger.info('=== Epoch {}, train loss {:.4f}, val auc {:.4f}, val acc {:.4f} ==='.format(*eval_info.values()))
-                
+                model, _ = val_trainer.train_epoch()
             
                 if val_auc <=0.51:
                     logger.info('train failed')
@@ -279,7 +284,7 @@ def main():
                         best_lr = sub_args.train_lr
                         best_state = copy.deepcopy(model.state_dict())
 
-            
+        
             th.save(best_state, f'./parameters/{args.key}_{best_auc:.4f}.pt')
             del model
             th.cuda.empty_cache()
@@ -296,4 +301,5 @@ def main():
     
         
 if __name__ == '__main__':
-    main()
+    while 1:
+        main()
