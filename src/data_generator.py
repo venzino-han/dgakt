@@ -126,13 +126,13 @@ def get_subgraph_label(graph:dgl.graph,
     subgraph = dgl.add_self_loop(subgraph)
     subgraph.edata['edge_mask'] = th.ones(subgraph.number_of_edges(), dtype=th.float32)
     subgraph.edata['edge_mask2'] = th.zeros(subgraph.number_of_edges(), dtype=th.float32)
-    target_edges = subgraph.edge_ids([0,1], [1,0], return_uv=False)
-
-    # normalized timestamp
+    target_edges = subgraph.edge_ids(th.tensor([0,1], dtype=th.int32), th.tensor([1,0], dtype=th.int32), return_uv=False)
     timestamps = subgraph.edata['ts']
     standard_ts = timestamps[target_edges.to(th.long)[0]].item()
     subgraph.edata['ts'] = normalize_timestamp(timestamps, standard_ts)
     subgraph.remove_edges(target_edges)
+
+    # normalized timestamp
     
     ts = subgraph.edata['ts'].unsqueeze(1)
     label = subgraph.edata['label'].unsqueeze(1)
@@ -323,7 +323,7 @@ class KT_Sequence_Graph(Dataset):
         print(self.graph.number_of_nodes())
         print(self.graph.number_of_edges())
 
-    def filter_part(self, part_set=set()):
+    def filter_part(self, part_set=set(), num=1000):
         print('user_ids :', len(self.user_ids))
         
         new_user_ids_list = []
@@ -335,7 +335,7 @@ class KT_Sequence_Graph(Dataset):
             else:
                 del self.user_seq_dict[user_seq_id]
 
-        self.user_ids = new_user_ids_list
+        self.user_ids = new_user_ids_list[:num]
         print('filterd user_ids :', len(self.user_ids))
 
     # def limit_samples(self, n):

@@ -1,0 +1,18 @@
+---
+model:
+  type: DGKT
+  latent_dims:
+    - 32
+    - 32
+  in_efeats: 3
+
+dataset:
+  name: ednet_part_b
+  max_seq: 64
+
+train:
+  learning_rates:
+    - 1e-3
+  batch_size: 256
+  gamma: 0.75
+  lambda: 0.001
