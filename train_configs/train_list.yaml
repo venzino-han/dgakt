@@ -1,7 +1,25 @@
 files:
-  - ./train_configs/dgkt_assist_64.yaml
-  - ./train_configs/dgkt_ednet_64.yaml
-  - ./train_configs/dgkt_junyi_64.yaml
+  # - ./train_configs/dgakt_assist_64.yaml
+  # - ./train_configs/dgakt_ednet_64.yaml
+  # - ./train_configs/dgakt_junyi_64.yaml
   # - ./train_configs/igmc_assist_64.yaml
-  # - ./train_configs/igmc_ednet_64.yaml
+  - ./train_configs/igmc_ednet_64.yaml
   # - ./train_configs/igmc_junyi_64.yaml
+
+  # - ./train_configs/dgakt_assist_64_a.yaml
+  # - ./train_configs/dgakt_assist_64_b.yaml
+  # - ./train_configs/dgakt_assist_64_c.yaml
+
+  # - ./train_configs/igmc_assist_64_a.yaml
+  # - ./train_configs/igmc_assist_64_b.yaml
+  # - ./train_configs/igmc_assist_64_c.yaml
+
+  # - ./train_configs/dgakt_ednet_64_a.yaml
+  # - ./train_configs/dgakt_ednet_64_b.yaml
+  # - ./train_configs/dgakt_ednet_64_c.yaml
+
+  # - ./train_configs/igmc_ednet_64_a.yaml
+  # - ./train_configs/igmc_ednet_64_b.yaml
+  # - ./train_configs/igmc_ednet_64_c.yaml
+
+

@@ -1,6 +1,6 @@
 ---
 model:
-  type: DGKT
+  type: DGAKT
   latent_dims:
     - 32
     - 32
@@ -11,8 +11,6 @@ dataset:
   max_seq: 64
 
 train:
-  learning_rates:
-    - 1e-3
-  batch_size: 256
+  batch_size: 128
   gamma: 0.75
   lambda: 0.001

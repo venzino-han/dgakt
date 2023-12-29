@@ -14,7 +14,11 @@ def get_dataloader_assist(args, data_path='assist', batch_size=128,
                           num_workers=8, seq_len=64, center_node=True):
 
     train_df = pd.read_csv(f'data/{data_path}/train_df.csv')
-    val_df = pd.read_csv(f'data/{data_path}/val_df.csv')
+    try:
+        val_df = pd.read_csv(f'data/{data_path}/val_df.csv')
+    except:
+        val_df = None
+        val_loader = None
     test_df = pd.read_csv(f'data/{data_path}/test_df.csv')
     problem_df = pd.read_csv(f'data/{data_path}/questions.csv')
 
@@ -33,22 +37,23 @@ def get_dataloader_assist(args, data_path='assist', batch_size=128,
     train_loader = DataLoader(train_seq_graph, batch_size=batch_size, shuffle=True, num_workers=num_workers,
                                 collate_fn=collate_data, pin_memory=True)
 
-    print('start validation graph generation')
+    if val_df is not None:
+        print('start validation graph generation')
 
-    with open(f"data/{data_path}/val_user_group.pkl.zip", 'rb') as pick:
-        val_user_group = pickle.load(pick)
-    with open(f"data/{data_path}/val_item_group.pkl.zip", 'rb') as pick:
-        val_item_group = pickle.load(pick)
+        with open(f"data/{data_path}/val_user_group.pkl.zip", 'rb') as pick:
+            val_user_group = pickle.load(pick)
+        with open(f"data/{data_path}/val_item_group.pkl.zip", 'rb') as pick:
+            val_item_group = pickle.load(pick)
 
-    val_seq_graph = KT_Sequence_Graph(args, val_user_group, val_item_group,
-                                       interaction_df=val_df,
-                                       problem_df=problem_df,
-                                       exe_number=config.ASSIST_EXE,
-                                       seq_len=seq_len,
-                                       center_node=center_node,
-                                       )
-    val_loader = DataLoader(val_seq_graph, batch_size=batch_size, shuffle=False, num_workers=num_workers,
-                                collate_fn=collate_data, pin_memory=True)
+        val_seq_graph = KT_Sequence_Graph(args, val_user_group, val_item_group,
+                                        interaction_df=val_df,
+                                        problem_df=problem_df,
+                                        exe_number=config.ASSIST_EXE,
+                                        seq_len=seq_len,
+                                        center_node=center_node,
+                                        )
+        val_loader = DataLoader(val_seq_graph, batch_size=batch_size, shuffle=False, num_workers=num_workers,
+                                    collate_fn=collate_data, pin_memory=True)
 
     print('start test graph generation')
 

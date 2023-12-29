@@ -1,19 +1,16 @@
 ---
-key: dgkt_ednet_64_test
 model:
-  type: DGKT
+  type: DGAKT
   latent_dims:
     - 32
     - 32
   in_efeats: 3
-  parameters: dgkt_ednet_64_0.8186.pt
-
+  parameters: dgakt_assist_64_0.9086.pt
 
 dataset:
-  name: ednet
+  name: assist
   max_seq: 64
 
 train:
-  batch_size: 256
   gamma: 0.75
   lambda: 0.001

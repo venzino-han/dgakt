@@ -1,12 +1,11 @@
 ---
-key: dgkt_junyi_64_test
 model:
-  type: DGKT
+  type: DGAKT
   latent_dims:
     - 32
     - 32
   in_efeats: 3
-  parameters: dgkt_junyi_64_0.9037.pt
+  parameters: dgakt_junyi_64_0.9134.pt
 
 
 dataset:

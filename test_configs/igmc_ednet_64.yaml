@@ -1,0 +1,19 @@
+---
+model:
+  type: IGMC
+  num_relations: 4
+  latent_dims:
+    - 32
+    - 32
+    - 32
+    - 32
+  edge_dropout: 0.
+  parameters: igmc_ednet_64_0.7857.pt
+
+dataset:
+  name: ednet
+  max_seq: 64
+
+train:
+  epochs: 20
+  batch_size: 256

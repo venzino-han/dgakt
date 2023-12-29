@@ -1,0 +1,19 @@
+---
+model:
+  type: IGMC
+  hop: 1
+  num_relations: 4
+  latent_dims:
+    - 32
+    - 32
+    - 32
+    - 32
+  edge_dropout: 0.
+  parameters: igmc_assist_64_assist_0.7949.pt
+
+dataset:
+  name: assist
+  max_seq: 64
+
+train:
+  epochs: 20

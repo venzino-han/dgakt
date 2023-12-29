@@ -1,0 +1,18 @@
+---
+model:
+  type: IGMC
+  num_relations: 4
+  latent_dims:
+    - 32
+    - 32
+    - 32
+    - 32
+  edge_dropout: 0.
+  parameters: igmc_junyi_0.8782.pt
+
+dataset:
+  name: junyi
+  max_seq: 64
+
+train:
+  epochs: 20

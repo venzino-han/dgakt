@@ -1,29 +1,13 @@
-import math, copy
-
-import dgl
-import pandas as pd
-import numpy as np
-import pickle as pkl
-
-import torch as th
-import torch.nn as nn
-from torch import optim
-
-import time
 from easydict import EasyDict
 
-from sklearn.metrics import roc_auc_score, accuracy_score, f1_score
+import dgl
+import numpy as np
+import torch as th
 
-from utils import get_logger, get_args_from_yaml
-from data_generator_ednet import get_dataloader_ednet, get_dataloader_ednet_part
-from data_generator_assist import get_dataloader_assist, get_dataloader_assist_part
-from data_generator_junyi import get_dataloader_junyi
 import config
-from train import Evaluator, get_model
+from utils import get_logger, get_args_from_yaml
+from train import Evaluator, get_model, count_parameters, DATALOADER_MAP
 
-from models.igmc import IGMC
-from models.dgkt import DGKT
-from models.sagkt import SAGKT
 
 
 def test(args:EasyDict, center_node, logger):
@@ -33,6 +17,7 @@ def test(args:EasyDict, center_node, logger):
 
     args.in_feats = config.IN_FEATS
     model = get_model(args)
+    count_parameters(model)
     print('center_node :', center_node)
 
     evaluator = Evaluator(args.model_type, args.device, gamma=args.gamma)
@@ -56,11 +41,6 @@ import yaml
 from collections import defaultdict
 from datetime import datetime
 
-DATALOADER_MAP = {
-    'assist':get_dataloader_assist,
-    'ednet':get_dataloader_ednet,
-    'junyi':get_dataloader_junyi,
-}
 
 def main():
     with open('./test_configs/test_list.yaml') as f:

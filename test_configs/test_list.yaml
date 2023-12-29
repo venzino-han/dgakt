@@ -1,4 +1,21 @@
 files:
-  - ./test_configs/dgkt_assist_64.yaml
-  - ./test_configs/dgkt_ednet_64.yaml
-  - ./test_configs/dgkt_junyi_64.yaml
+  - ./test_configs/dgakt_assist_64.yaml
+  - ./test_configs/dgakt_ednet_64.yaml
+  - ./test_configs/dgakt_junyi_64.yaml
+  # - ./test_configs/igmc_assist_64.yaml
+  # - ./test_configs/igmc_ednet_64.yaml
+  # - ./test_configs/igmc_junyi_64.yaml
+
+  # - ./test_configs/dgakt_assist_part_a.yaml
+  # - ./test_configs/dgakt_assist_part_b.yaml
+  # - ./test_configs/dgakt_assist_part_c.yaml
+  # - ./test_configs/igmc_assist_part_a.yaml
+  # - ./test_configs/igmc_assist_part_b.yaml
+  # - ./test_configs/igmc_assist_part_c.yaml
+
+  # - ./test_configs/dgakt_ednet_part_a.yaml
+  # - ./test_configs/dgakt_ednet_part_b.yaml
+  # - ./test_configs/dgakt_ednet_part_c.yaml
+  # - ./test_configs/igmc_ednet_part_a.yaml
+  # - ./test_configs/igmc_ednet_part_b.yaml
+  # - ./test_configs/igmc_ednet_part_c.yaml

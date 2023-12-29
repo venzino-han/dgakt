@@ -100,10 +100,10 @@ def pre_process_df(train_path, ques_path, train_ratio=0.6, val_ratio=0.2, test_r
     return train_df, val_df, val_graph_df, test_df, test_graph_df
 
 
+BASIC_TRAIN_FEATURES = ["user_id", "content_id", "answered_correctly", "timestamp", 'part']
 
 if __name__=="__main__":
 
-    BASIC_TRAIN_FEATURES = ["user_id", "content_id", "answered_correctly", "timestamp", 'part']
     
     import argparse
     parser = argparse.ArgumentParser()

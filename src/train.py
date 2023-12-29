@@ -27,8 +27,8 @@ import config
 
 
 from models.igmc import IGMC
-from models.dgkt import DGKT
 from models.sagkt import SAGKT
+from models.dgakt import DGAKT
 
 
 def get_model(args):
@@ -41,9 +41,10 @@ def get_model(args):
                      edge_dropout=args.edge_dropout,
                      ).to(args.device)
 
-    if args.model_type == 'DGKT':
-        model = DGKT(in_nfeats=args.in_feats,
+    if args.model_type == 'DGAKT':
+        model = DGAKT(in_nfeats=args.in_feats,
                      in_efeats=args.in_efeats,
+                     out_efeats=args.out_efeats,
                      latent_dim=args.latent_dims,
                      ).to(args.device)
 
@@ -55,6 +56,7 @@ def get_model(args):
 
     if args.parameters is not None:
         model.load_state_dict(th.load(f"./parameters/{args.parameters}"))
+        print(f"./parameters/{args.parameters}")
 
     return model
 
@@ -79,7 +81,7 @@ class Evaluator():
         self.gamma = gamma
         self.device = device
         
-        if model_type in ["DGKT", "SAGKT"]:
+        if model_type in ["DGAKT", "SAGKT"]:
             self.get_model_prediction = self._get_dual_aspect_model_prediction
         elif model_type in ["IGMC"]:
             self.get_model_prediction = self._get_single_aspect_model_prediction
@@ -127,7 +129,7 @@ class Traniner():
         self.lambda_ = args.lambda_
         self.device = args.device
 
-        if args.model_type in ['DGKT', 'SAGKT']:
+        if args.model_type in ['DGAKT', 'SAGKT']:
             self._model_update = self._model_update_dual_aspect_loss
         elif args.model_type in ['IGMC']:
             self._model_update = self._model_update_single_aspect_loss
@@ -191,15 +193,16 @@ DATALOADER_MAP = {
     'assist_part2':get_dataloader_assist,
     'ednet':get_dataloader_ednet,
     'ednet_part_a':get_dataloader_ednet_part_a,
-    'ednet_part_b':get_dataloader_ednet,
-    'ednet_part_c':get_dataloader_ednet,
+    'ednet_part_b':get_dataloader_ednet_part_b,
+    'ednet_part_c':get_dataloader_ednet_part_c,
     'junyi':get_dataloader_junyi,
 }
 
 
 def main():
-    th.manual_seed(28)
-    np.random.seed(42)
+    th.cuda.empty_cache()
+    th.manual_seed(0)
+    np.random.seed(0)
     with open('./train_configs/train_list.yaml') as f:
         files = yaml.load(f, Loader=yaml.FullLoader)
     file_list = files['files']

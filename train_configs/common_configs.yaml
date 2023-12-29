@@ -1,10 +1,10 @@
 ---
 model:
-  type: DGKT
+  type: DGAKT
   in_nfeats: 32
   out_nfeats: 32
   in_efeats: 3
-  out_efeats: 32
+  out_efeats: 6
   latent_dims:
     - 32
     - 32
@@ -23,7 +23,11 @@ train:
   epochs: 20
   batch_size: 128
   learning_rates:
+    - 5e-3
     - 1e-3
+    - 2e-3
+    - 3e-3
+    - 4e-3
   weight_decay: 0.0
   lr_decay_step: 5
   lr_decay_factor: 0.90

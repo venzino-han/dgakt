@@ -6,12 +6,13 @@ from .egatconv import EGATConv
 import copy
 
 
-class DGKT(nn.Module):
+class DGAKT(nn.Module):
 
     def __init__(self, in_nfeats, in_efeats, latent_dim,
+                 out_efeats=6,
                  num_heads=4, subgraph_embedding_from='center'):
                  
-        super(DGKT, self).__init__()
+        super(DGAKT, self).__init__()
         self.in_nfeats = in_nfeats
         self.subgraph_embedding_from = subgraph_embedding_from
         self.elu = nn.ELU()
@@ -27,13 +28,13 @@ class DGKT(nn.Module):
             self.local_egats.append(EGATConv(in_node_feats=latent_dim[i],
                                             in_edge_feats=in_efeats,
                                             out_node_feats=latent_dim[i+1],
-                                            out_edge_feats=in_efeats*2,
+                                            out_edge_feats=out_efeats,
                                             num_heads=num_heads))
             self.agg_layers_1.append(nn.Linear(latent_dim[i+1]*num_heads, latent_dim[i+1]))
             self.global_egats.append(EGATConv(in_node_feats=latent_dim[i+1],
                                             in_edge_feats=in_nfeats,
                                             out_node_feats=latent_dim[i+1],
-                                            out_edge_feats=in_efeats*2,
+                                            out_edge_feats=in_nfeats,
                                             num_heads=num_heads))
             self.agg_layers_2.append(nn.Linear(latent_dim[i+1]*num_heads, latent_dim[i+1]))
             
@@ -66,6 +67,7 @@ class DGKT(nn.Module):
 
     def forward(self, graph):
         """ graph : subgraph batch """
+        
         graph.edata['norm'] = graph.edata['edge_mask']
         node_x = graph.ndata['x'].float()
 
@@ -118,3 +120,4 @@ class DGKT(nn.Module):
         subg_x = subg_states[subgraphs]
 
         return ui_x, subg_x
+

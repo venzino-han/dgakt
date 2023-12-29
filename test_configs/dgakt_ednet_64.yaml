@@ -1,0 +1,18 @@
+---
+model:
+  type: DGAKT
+  latent_dims:
+    - 32
+    - 32
+  in_efeats: 3
+  parameters: dgakt_ednet_64_0.8228.pt
+
+
+dataset:
+  name: ednet
+  max_seq: 64
+
+train:
+  batch_size: 256
+  gamma: 0.75
+  lambda: 0.001

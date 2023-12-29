@@ -8,6 +8,7 @@ model:
     - 32
     - 32
   edge_dropout: 0.
+  parameters: 
 
 dataset:
   name: ednet

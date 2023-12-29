@@ -29,7 +29,10 @@ if __name__ == '__main__':
         os.makedirs(path, exist_ok=True)
     
     if args.dataset == 'all':
-        dataset_files_dict = dict(chain(assist_files_dict.items(), junyi_files_dict.items(), ednet_files_dict.items()))
+        dataset_files_dict = dict(chain(
+            # assist_files_dict.items(), 
+            junyi_files_dict.items(), 
+            ednet_files_dict.items()))
     if args.dataset == 'assist':
         dataset_files_dict = assist_files_dict
     if args.dataset == 'ednet':
